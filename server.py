@@ -54,7 +54,7 @@ def handle_client(conn, addr):
           f" Connection closed {colours.BOLD}{colours.RED}"
           f"{addr[0]}:{addr[1]}{colours.ENDC}")
     print(f"   Reason: "
-          f"{colours.BOLD}{colours.RED}test{colours.ENDC} \n", end='')
+          f"{colours.BOLD}{colours.RED}connection closed by the client{colours.ENDC} \n", end='')
     # Print the number of currently active connections
     print(f"{colours.BOLD}{colours.GREEN}⫸{colours.ENDC}"
           f" Active connections: {colours.BOLD}{colours.GREEN}{threading.activeCount() - 1}\n")
@@ -66,9 +66,9 @@ def main():
         server.listen()
         # Print information: Listening on {IP}:{PORT}
         print(f"\n{colours.BOLD}{colours.BLUE}〘{colours.ENDC}"
-              f" The server is listening on {colours.BOLD}{colours.GREEN}{IP}:{PORT}{colours.YELLOW} 〙{colours.ENDC}")
+                  f" The server is listening on {colours.BOLD}{colours.GREEN}{IP}:{PORT}{colours.YELLOW} 〙{colours.ENDC}")
         print(f"{colours.BLUE}------------{colours.CYAN}------------{colours.GREEN}----------"
-              f"{colours.YELLOW}------------{colours.ENDC}")
+                  f"{colours.YELLOW}------------{colours.ENDC}")
 
         # Main program loop
         while True:
@@ -80,12 +80,10 @@ def main():
             # Print information about active connections.
             # Active connections: {number of active connections}
             print(f"{colours.BOLD}{colours.GREEN}⫸{colours.ENDC}"
-                  f" Active connections: {colours.BOLD}{colours.GREEN}{threading.activeCount() - 1}\n")
+                      f" Active connections: {colours.BOLD}{colours.GREEN}{threading.activeCount() - 1}\n")
 
-    # Print "Quitting.." and stop the program
-    # when a user or programmer interrupts a program's usual execution.
-    except KeyboardInterrupt:
-        print(f"\n{colours.BOLD}{colours.RED}Quitting...{colours.ENDC}")
+    # Quit if errors occur
+    except:
         sys.exit()
 
 if __name__ == "__main__":
