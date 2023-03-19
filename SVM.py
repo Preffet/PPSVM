@@ -28,15 +28,16 @@ from sklearn.utils import Bunch
 mpl_use('MacOSX')
 
 # import training data
-data = pd.read_csv("dataset.csv")
-df = data[["month", "temperature","humidity"]]
+data = pd.read_csv("datasets/training.csv")
+df = data[["month","hour","temperature","light"]]
 
 # model specification
-model = OneClassSVM(kernel = 'rbf', gamma = 0.001, nu = 0.03).fit(df)
+model = OneClassSVM(kernel = 'rbf', gamma ='scale', nu = 0.03).fit(df)
 
 # import data for predictions
-data2 = pd.read_csv("test.csv")# input data
-dff = data2[["month", "temperature","humidity"]]
+data2 = pd.read_csv("datasets/mixedData.csv")
+# input data
+dff = data2[["month", "hour", "temperature","light"]]
 # make the predictions
 y_pred = model.predict(dff)
 
@@ -48,7 +49,7 @@ outlier_values = dff.iloc[outlier_index]
 print(outlier_values)
 
 # visualize outputs
-plt.scatter(data2["temperature"],dff["humidity"])
-plt.scatter(outlier_values["temperature"],outlier_values["humidity"], c = "r")
-plt.savefig("figure1.png")
+plt.scatter(data2["month"],data2["temperature"],[data2["light"]])
+plt.scatter(outlier_values["month"],outlier_values["temperature"],[outlier_values["light"]], c = "r")
+plt.savefig("figures/figure1.png")
 
