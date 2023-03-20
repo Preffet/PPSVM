@@ -1,43 +1,39 @@
 '''
 ╔═══════════════════════════════════════════════════╗
  Privacy Preserving SVM for anomaly detection in ASNs
+  Justina Metrikyte (c0037826), Newcastle University
 ╚═══════════════════════════════════════════════════╝
-Justina Metrikyte (c0037826), 2023 May
 '''
 
-###### Step 1: Import Libraries
-# Synthetic dataset
-import csv
-
+## Import Libraries
+import numpy as np
 from numpy import where
-from sklearn.datasets import make_classification
 # Data processing
 import pandas as pd
-import numpy as np
-from collections import Counter
 # Visualization
 import matplotlib.pyplot as plt
 # Model and performance
 from sklearn.svm import OneClassSVM
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report
 from matplotlib import use as mpl_use
-from sklearn.utils import Bunch
 
-
+# Change/delete/update to other matplotLib back-end
+# if using other OS than MacOSX, I had to add this as the default one
+# caused the app to crash while running on my laptop
 mpl_use('MacOSX')
 
 # import training data
-data = pd.read_csv("datasets/training.csv")
-df = data[["month","hour","temperature","light"]]
+data = pd.read_csv("datasets/trainingLightData.csv")
+# pick the features
+df = data[["hour","light"]]
 
 # model specification
-model = OneClassSVM(kernel = 'rbf', gamma ='scale', nu = 0.03).fit(df)
+model = OneClassSVM(kernel = 'rbf', gamma =0.01, nu = 0.1).fit(df)
 
 # import data for predictions
-data2 = pd.read_csv("datasets/mixedData.csv")
-# input data
-dff = data2[["month", "hour", "temperature","light"]]
+data2 = pd.read_csv("datasets/mixedLightData.csv")
+# input features
+dff = data2[["hour","light"]]
+
 # make the predictions
 y_pred = model.predict(dff)
 
@@ -49,7 +45,26 @@ outlier_values = dff.iloc[outlier_index]
 print(outlier_values)
 
 # visualize outputs
-plt.scatter(data2["month"],data2["temperature"],[data2["light"]])
-plt.scatter(outlier_values["month"],outlier_values["temperature"],[outlier_values["light"]], c = "r")
+# title
+plt.title("Anomaly detection for data from light sensors")
+# set x,y axis ticks
+plt.xticks(range(0, 24))
+plt.yticks(np.arange(0, 21000, 1000))
+# labels
+plt.xlabel("Time of the day (hour)")
+plt.ylabel("Light level (lux)")
+
+# all the given data
+plt.scatter(data2["hour"],data2["light"],
+            color='#5D9C59',label="Valid data",marker="s",s=200,alpha=.5)
+# anomalies
+plt.scatter(outlier_values["hour"],outlier_values["light"]
+            ,color='#DF2E38',label="Anomalous data",marker="s",s=200, alpha=.5)
+
+plt.legend(loc="upper left")
+
+
 plt.savefig("figures/figure1.png")
+
+
 
