@@ -1,3 +1,4 @@
+import random
 import socket
 from random import randrange
 import time
@@ -29,8 +30,11 @@ def main():
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.connect(ADDR)
         connected = True
+        # Print the header - client IP address {IP}:{PORT}
+        print(f"\n       "
+              f" Client IP {colours.BOLD}{colours.BLUE}{client.getsockname()[0]}:{client.getsockname()[1]}{colours.ENDC}")
         # Print the header - connected to the server at {IP}:{PORT}
-        print(f"\n{colours.BOLD}{colours.BLUE}〘{colours.ENDC}"
+        print(f"{colours.BOLD}{colours.BLUE}〘{colours.ENDC}"
               f" Connected to the server at {colours.BOLD}{colours.GREEN}{IP}:{PORT}{colours.YELLOW} 〙{colours.ENDC}")
         print(f"{colours.BLUE}------------{colours.CYAN}------------{colours.GREEN}------------"
               f"{colours.YELLOW}----------{colours.ENDC}\n")
@@ -44,8 +48,10 @@ def main():
         try:
             # Sleep for a bit
             time.sleep(10)
-
-            msg = str(randrange(11))
+            # Read a random line from the dataset containing valid sensor readings
+            with open("datasets/validLightData.csv") as f:
+                lines = f.readlines()
+                msg = random.choice(lines)
             print(f"{colours.BOLD}{colours.CYAN}⫸{colours.ENDC} Sent: "
                   f"{colours.BOLD}{colours.CYAN}{msg}{colours.ENDC}")
             # Send the message to the server
