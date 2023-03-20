@@ -1,6 +1,7 @@
 import socket
 import sys
 import threading
+import SVM
 
 # variables for sending/receiving data
 IP = socket.gethostbyname('localhost')
@@ -31,21 +32,44 @@ def handle_client(conn, addr):
     # New connection from {IP}:{PORT}
     print(f"\n{colours.BOLD}{colours.CYAN}⫸{colours.ENDC}"
           f" New connection from {colours.BOLD}{colours.CYAN}{addr[0]}:{addr[1]}\n",end = '')
+    # Add the client to the clients.csv and assign id if the client does not already exist
+    with open("detectionSystemFiles/clients.csv", "r+") as file:
+        id = len(file.readlines())+1
+        if not(f"{addr[0]}:{addr[1]}" in file.read()):
+            with open("detectionSystemFiles/clients.csv", "a") as f:
+                f.write(f"{id},{addr[0]}:{addr[1]}\n")
 
     connected = True
+
     # Run while the client is connected
     while connected:
-        # Receive the message, if it is empty,
-        # add the ip to the watchlist, close the connection
-        msg = conn.recv(SIZE).decode(FORMAT)
-        if (len(msg)<=0):
-            connected = False
-        else:
-            # Print the message: Message from {IP}:{PORT} : {MESSAGE}
-            print(f"{colours.BOLD}{colours.YELLOW}✦{colours.ENDC}"
-                  f"{colours.ENDC} Message from {addr[0]}:{addr[1]} :{colours.BOLD}{colours.YELLOW} {msg}")
-            # Send the message back that it was received
-            conn.send(msg.encode(FORMAT))
+        # check if the connected client is not in the blocklist,
+        # if not, receive the message, else close the connection
+        with open("detectionSystemFiles/blocklist.csv", "r") as blocklist:
+            if not (f"{addr[0]}:{addr[1]}" in blocklist.read()):
+                msg = conn.recv(SIZE).decode(FORMAT)
+
+                # if the message is empty, close the connection
+                if (len(msg) <= 0):
+                    connected = False
+
+                # check if the data is not anomalous
+                # convert data to the required format
+                dataToCheck = [int(x) for x in msg.split(",")]
+                # check if it is anomalous using one class SVM
+                SVM.anomaly_detection(dataToCheck)
+
+
+                #SVM.anomaly_detection(msg)
+
+
+                # Doublecheck using apis
+
+                # Print the message: Message from {IP}:{PORT} : {MESSAGE}
+                print(f"{colours.BOLD}{colours.YELLOW}✦{colours.ENDC}"
+                          f"{colours.ENDC} Message from {addr[0]}:{addr[1]} :{colours.BOLD}{colours.YELLOW} {msg}")
+                # Send the message back that it was received
+                conn.send(msg.encode(FORMAT))
     conn.close()
     # Print information about the closed connection
     # Connection closed {IP}:{PORT},
