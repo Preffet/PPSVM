@@ -1,6 +1,7 @@
 import socket
 import sys
 import threading
+from datetime import datetime
 import SVM
 
 # variables for sending/receiving data
@@ -21,11 +22,6 @@ class colours:
     BLUE = '\033[94m'
     ORANGE = '\033[38;5;173m'
 
-def append_blocklist(ip,port,reason):
-    f = open("blocklist.txt", "a")
-    f.write("Now the file has more content!")
-    f.close()
-
 # Handle the communication between the server and the client
 def handle_client(conn, addr):
     # Print information when a new connection is received
@@ -44,46 +40,57 @@ def handle_client(conn, addr):
     while connected:
         # check if the connected client is not in the blocklist,
         # if not, receive the message, else close the connection
-        with open("detectionSystemFiles/blocklist.csv", "r") as blocklist:
+        malicious = False
+        with open("detectionSystemFiles/blocklist.csv", "a+") as blocklist:
             if not (f"{addr[0]}:{addr[1]}" in blocklist.read()):
                 msg = conn.recv(SIZE).decode(FORMAT)
 
-                # if the message is empty, close the connection
-                # but do not add the client to the blocklist
-                if (len(msg) <= 0):
-                    connected = False
+            # if the message is empty, close the connection
+            # but do not add the client to the blocklist
+            if not(len(msg) <= 0):
 
-                # check if the data is not anomalous
-                else:
-                    # convert data to the required format
-                    dataToCheck = [float(x) for x in msg.split(",")]
-                    # check if it is anomalous using one class SVM
-                    # if it is, inform the administrators and add the ip
-                    # to the blocklist
-                    if not SVM.anomaly_detection(dataToCheck).size==0:
-                        # add ip to the blocklist
-                        with open("detectionSystemFiles/blocklist.csv", "a") as blocklist:
-                            blocklist.write(f"{id},{addr[0]}:{addr[1]}\n")
-                            # send an email to the admins
+                # Print the message: Message from {IP}:{PORT} : {MESSAGE}
+                print(f"{colours.BOLD}{colours.YELLOW}✦{colours.ENDC}"
+                                  f"{colours.ENDC} Message from {addr[0]}:{addr[1]} :{colours.BOLD}{colours.YELLOW} {msg}{colours.ENDC}")
 
+                # convert data to the required format
 
-                    # Print the message: Message from {IP}:{PORT} : {MESSAGE}
-                    print(f"{colours.BOLD}{colours.YELLOW}✦{colours.ENDC}"
-                              f"{colours.ENDC} Message from {addr[0]}:{addr[1]} :{colours.BOLD}{colours.YELLOW} {msg}{colours.ENDC}")
-                    # Send the message back that it was received
-                    conn.send(msg.encode(FORMAT))
+                dataToCheck = [float(x) for x in msg.split(",")]
+                # check if it is anomalous using one class SVM
+                # if it is, inform the administrators and add the ip
+                # to the blocklist
+                if not SVM.anomaly_detection(dataToCheck).size == 0:
+                    malicious=True
+                    # add ip to the blocklist
+                    print(f"\n{colours.BOLD}{colours.RED}⫸{colours.ENDC}"
+                                      f" Malicious data received: {colours.BOLD}{colours.RED}"
+                                      f"{dataToCheck[0]},{dataToCheck[1]}{colours.ENDC}", end='')
+                    currentDateAndTime = datetime.now()
+                    blocklist.write(f"{addr[0]}:{addr[1]},{currentDateAndTime}\n")
+                    print(f"\n{colours.BOLD}{colours.RED}⫸{colours.ENDC}"
+                                          f" IP added to the blocklist: {colours.BOLD}"
+                                          f"{colours.RED}{addr[0]}:{addr[1]}{colours.ENDC}", end='')
+                # close the connection
+                if(malicious):
+                    connected=False
+                # Send the message back that it was
+                # received, if the message was not malicious
+                conn.send(msg.encode(FORMAT))
+            else:
+                connected = False
     conn.close()
     # Print information about the closed connection
     # Connection closed {IP}:{PORT},
     # reason: {reason for closing the connection}
+    reason = "closed by the client" if not malicious else "malicious node"
     print(f"\n{colours.BOLD}{colours.RED}⫸{colours.ENDC}"
           f" Connection closed {colours.BOLD}{colours.RED}"
           f"{addr[0]}:{addr[1]}{colours.ENDC}")
     print(f"   Reason: "
-          f"{colours.BOLD}{colours.RED}connection closed by the client{colours.ENDC} \n", end='')
+          f"{colours.BOLD}{colours.RED}{reason}{colours.ENDC} \n", end='')
     # Print the number of currently active connections
     print(f"{colours.BOLD}{colours.GREEN}⫸{colours.ENDC}"
-          f" Active connections: {colours.BOLD}{colours.GREEN}{threading.activeCount() - 1}\n{colours.ENDC}")
+          f" Active connections: {colours.BOLD}{colours.GREEN}{threading.activeCount() - 2}\n{colours.ENDC}")
 
 def main():
     try:
