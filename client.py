@@ -51,7 +51,7 @@ def main():
             # Read a random line from the dataset containing valid sensor readings
             with open("datasets/validLightData.csv") as f:
                 lines = f.readlines()
-                msg = random.choice(lines)
+                msg = random.choice(lines[1:])
             print(f"{colours.BOLD}{colours.CYAN}⫸{colours.ENDC} Sent: "
                   f"{colours.BOLD}{colours.CYAN}{msg}{colours.ENDC}")
             # Send the message to the server
