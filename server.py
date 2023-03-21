@@ -38,7 +38,6 @@ def handle_client(conn, addr):
         if not(f"{addr[0]}:{addr[1]}" in file.read()):
             with open("detectionSystemFiles/clients.csv", "a") as f:
                 f.write(f"{id},{addr[0]}:{addr[1]}\n")
-
     connected = True
 
     # Run while the client is connected
@@ -50,26 +49,29 @@ def handle_client(conn, addr):
                 msg = conn.recv(SIZE).decode(FORMAT)
 
                 # if the message is empty, close the connection
+                # but do not add the client to the blocklist
                 if (len(msg) <= 0):
                     connected = False
 
                 # check if the data is not anomalous
-                # convert data to the required format
-                dataToCheck = [int(x) for x in msg.split(",")]
-                # check if it is anomalous using one class SVM
-                SVM.anomaly_detection(dataToCheck)
+                else:
+                    # convert data to the required format
+                    dataToCheck = [float(x) for x in msg.split(",")]
+                    # check if it is anomalous using one class SVM
+                    # if it is, inform the administrators and add the ip
+                    # to the blocklist
+                    if not SVM.anomaly_detection(dataToCheck).size==0:
+                        # add ip to the blocklist
+                        with open("detectionSystemFiles/blocklist.csv", "a") as blocklist:
+                            blocklist.write(f"{id},{addr[0]}:{addr[1]}\n")
+                            # send an email to the admins
 
 
-                #SVM.anomaly_detection(msg)
-
-
-                # Doublecheck using apis
-
-                # Print the message: Message from {IP}:{PORT} : {MESSAGE}
-                print(f"{colours.BOLD}{colours.YELLOW}✦{colours.ENDC}"
-                          f"{colours.ENDC} Message from {addr[0]}:{addr[1]} :{colours.BOLD}{colours.YELLOW} {msg}")
-                # Send the message back that it was received
-                conn.send(msg.encode(FORMAT))
+                    # Print the message: Message from {IP}:{PORT} : {MESSAGE}
+                    print(f"{colours.BOLD}{colours.YELLOW}✦{colours.ENDC}"
+                              f"{colours.ENDC} Message from {addr[0]}:{addr[1]} :{colours.BOLD}{colours.YELLOW} {msg}{colours.ENDC}")
+                    # Send the message back that it was received
+                    conn.send(msg.encode(FORMAT))
     conn.close()
     # Print information about the closed connection
     # Connection closed {IP}:{PORT},
@@ -81,7 +83,7 @@ def handle_client(conn, addr):
           f"{colours.BOLD}{colours.RED}connection closed by the client{colours.ENDC} \n", end='')
     # Print the number of currently active connections
     print(f"{colours.BOLD}{colours.GREEN}⫸{colours.ENDC}"
-          f" Active connections: {colours.BOLD}{colours.GREEN}{threading.activeCount() - 1}\n")
+          f" Active connections: {colours.BOLD}{colours.GREEN}{threading.activeCount() - 1}\n{colours.ENDC}")
 
 def main():
     try:
