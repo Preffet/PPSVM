@@ -54,13 +54,12 @@ def handle_client(conn, addr):
                                   f"{colours.ENDC} Message from {addr[0]}:{addr[1]} :{colours.BOLD}{colours.YELLOW} {msg}{colours.ENDC}")
 
                 # convert data to the required format
-
                 dataToCheck = [float(x) for x in msg.split(",")]
                 # check if it is anomalous using one class SVM
                 # if it is, inform the administrators and add the ip
                 # to the blocklist
                 if not SVM.anomaly_detection(dataToCheck).size == 0:
-                    malicious=True
+                    malicious = True
                     # add ip to the blocklist
                     print(f"\n{colours.BOLD}{colours.RED}⫸{colours.ENDC}"
                                       f" Malicious data received: {colours.BOLD}{colours.RED}"

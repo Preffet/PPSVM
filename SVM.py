@@ -14,6 +14,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 # Model and performance
 from sklearn import preprocessing
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.svm import OneClassSVM
 from matplotlib import use as mpl_use
 
@@ -27,12 +28,12 @@ def anomaly_detection(dataToCheck):
     # pick the features
     df = data[["hour","light"]]
     # model specification
-    model = OneClassSVM(kernel = 'rbf', gamma =0.01, nu = 0.1).fit(df)
+    model = OneClassSVM(kernel='rbf', gamma=0.014, nu=0.02).fit(df)
 
     # import data for predictions
     #data2 = pd.read_csv("datasets/mixedLightData.csv")
     # input features
-    dff = pd.DataFrame([dataToCheck], columns=["hour","light"])
+    dff = pd.DataFrame([dataToCheck], columns = ["hour","light"])
 
     #dff = data2[["hour","light"]]
 
@@ -46,26 +47,54 @@ def anomaly_detection(dataToCheck):
     outlier_values = dff.iloc[outlier_index]
     return outlier_values
 
+
 '''
+def main():
+    mpl_use('MacOSX')
+    # import training data
+    data = pd.read_csv("datasets/trainingLightData.csv")
+    # pick the features
+    df = data[["hour", "light"]]
+    # model specification
+    model = OneClassSVM(kernel='rbf', gamma=0.014, nu=0.02).fit(df)
+
+    # import data for predictions
+    data2 = pd.read_csv("datasets/mixedLightData.csv")
+    # input features
+    dff = pd.DataFrame(data2[["hour", "light"]])
+
+    # dff = data2[["hour","light"]]
+
+    # make the predictions
+    y_pred = model.predict(dff)
+
+    # filter outlier indexes
+    outlier_index = where(y_pred == -1)
+    # filter outlier values
+
+    outlier_values = dff.iloc[outlier_index]
     # visualize outputs
     # title
-    plt.title("Anomaly detection for data from light sensors")
+    plt.title("Anomaly detection using one class SVM")
     # set x,y axis ticks
     plt.xticks(range(0, 24))
-    plt.yticks(np.arange(0, 21000, 1000))
+    plt.yticks(np.arange(0, 19000, 1000))
     # labels
     plt.xlabel("Time of the day (hour)")
     plt.ylabel("Light level (lux)")
 
     # all the given data
-    plt.scatter(data["hour"],data["light"],
-                color='#5D9C59',label="Valid data",marker="s",s=200,alpha=.5)
+    plt.scatter(data2["hour"], data2["light"],
+                color='#5D9C59', label="Valid data", marker="s", s=200, alpha=.5)
     # anomalies
-    #plt.scatter(outlier_values["hour"],outlier_values["light"]
-    #            ,color='#DF2E38',label="Anomalous data",marker="s",s=200, alpha=.5)
+    plt.scatter(outlier_values["hour"],outlier_values["light"]
+              ,color='#DF2E38',label="Anomalous data",marker="s",s=200, alpha=.5)
 
     plt.legend(loc="upper left")
 
     plt.savefig("figures/figure1.png")
-'''
 
+
+if __name__ == "__main__":
+    main()
+'''
