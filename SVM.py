@@ -6,15 +6,10 @@
 '''
 
 ## Import Libraries
-import numpy as np
 from numpy import where
 # Data processing
 import pandas as pd
-# Visualization
-import matplotlib.pyplot as plt
 # Model and performance
-from sklearn import preprocessing
-from sklearn.preprocessing import MinMaxScaler
 from sklearn.svm import OneClassSVM
 from matplotlib import use as mpl_use
 
@@ -23,28 +18,29 @@ def anomaly_detection(dataToCheck):
     # if using other OS than MacOSX, I had to add this as the default one
     # caused the app to crash while running on my laptop
     mpl_use('MacOSX')
+
     # import training data
     data = pd.read_csv("datasets/trainingLightData.csv")
     # pick the features
     df = data[["hour","light"]]
+    # normalise the data
+    normalized_training_data = df / df.max()
+
     # model specification
-    model = OneClassSVM(kernel='rbf', gamma=0.014, nu=0.02).fit(df)
+    model = OneClassSVM(kernel='rbf', gamma=39, nu=0.03).fit(normalized_training_data)
 
     # import data for predictions
-    #data2 = pd.read_csv("datasets/mixedLightData.csv")
-    # input features
-    dff = pd.DataFrame([dataToCheck], columns = ["hour","light"])
+    data_to_be_predicted = pd.DataFrame([dataToCheck], columns = ["hour","light"])
+    # normalise this data, take the max values from the training data
+    normalized_data_for_predictions = data_to_be_predicted / df.max()
 
-    #dff = data2[["hour","light"]]
-
-    # make the predictions
-    y_pred = model.predict(dff)
+    # make the prediction
+    prediction = model.predict(normalized_data_for_predictions)
 
     # filter outlier indexes
-    outlier_index = where(y_pred == -1)
+    outlier_index = where(prediction == -1)
     # filter outlier values
-    #print(outlier_index)
-    outlier_values = dff.iloc[outlier_index]
+    outlier_values = normalized_data_for_predictions.iloc[outlier_index]
     return outlier_values
 
 
