@@ -10,7 +10,6 @@ import sys
 import threading
 
 
-
 # ANSI escape codes to print coloured/bold text
 class colours:
     ENDC = '\033[0m'
@@ -108,18 +107,17 @@ def anomaly_detection(conn,addr):
             # decision: anomalous
             print(f"\n{colours.BOLD}{colours.RED}⫸{colours.ENDC}"
                   f" Decision: {colours.BOLD}{colours.RED}"
-                  f"anomalous{colours.ENDC}", end='')
+                  f"anomalous{colours.ENDC}\n")
         else:
             decision = "valid"
             # print that the received data is valid
             # decision: valid
             print(f"\n{colours.BOLD}{colours.GREEN}⫸{colours.ENDC}"
                   f" Decision: {colours.BOLD}{colours.GREEN}"
-                  f"valid{colours.ENDC}")
+                  f"valid{colours.ENDC}\n")
 
         conn.send(decision.encode(FORMAT))
     else:
-        print("no data received")
         return
 
 
@@ -202,7 +200,7 @@ def main():
             anomaly_detection(conn,addr)
 
             # Create a separate thread to handle separate data
-            thread = threading.Thread(target=anomaly_detection, args=( conn, addr))
+            thread = threading.Thread(target=anomaly_detection, args=(conn, addr))
             thread.start()
 
 
