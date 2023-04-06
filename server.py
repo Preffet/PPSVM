@@ -1,3 +1,4 @@
+import os
 import socket
 import sys
 import threading
@@ -84,6 +85,11 @@ def handle_client(conn, addr):
                     conn.send(msg.encode(FORMAT))
                     connected = False
                     conn.close()
+
+                # if the data is valid, inform the client
+                else:
+                    msg = "valid"
+                    conn.send(msg.encode(FORMAT))
             else:
                 connected = False
                 conn.close()
@@ -126,9 +132,14 @@ def handle_cloud(msg):
     decision = cloud_server.recv(SIZE).decode(FORMAT)
     # print information about the decision,
     # decision: {decision}
-    print(f"{colours.BOLD}{colours.ORANGE}✦{colours.ENDC}"
-          f"{colours.ENDC} Returned decision:"
-          f"{colours.BOLD}{colours.ORANGE} {decision}{colours.ENDC}\n ")
+    if decision == "valid":
+        print(f"{colours.BOLD}{colours.GREEN}✦{colours.ENDC}"
+              f"{colours.ENDC} Returned decision:"
+              f"{colours.BOLD}{colours.GREEN} {decision}{colours.ENDC}\n ")
+    else:
+        print(f"{colours.BOLD}{colours.RED}✦{colours.ENDC}"
+              f"{colours.ENDC} Returned decision:"
+              f"{colours.BOLD}{colours.RED} {decision}{colours.ENDC}\n ")
     return decision
 
 def main():
@@ -156,8 +167,7 @@ def main():
 
     # Quit if errors occur
     except:
-        print("error")
-        sys.exit()
+        os._exit(1)
 
 
 if __name__ == "__main__":
