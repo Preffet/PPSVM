@@ -1,6 +1,5 @@
 import random
 import socket
-from random import randrange
 import time
 import sys
 
@@ -53,12 +52,21 @@ def main():
                 lines = f.readlines()
                 msg = random.choice(lines[1:])
             print(f"{colours.BOLD}{colours.CYAN}⫸{colours.ENDC} Sent: "
-                  f"{colours.BOLD}{colours.CYAN}{msg}{colours.ENDC}")
+                  f"{colours.BOLD}{colours.CYAN}{msg}{colours.ENDC}", end='')
             # Send the message to the server
             client.send(msg.encode(FORMAT))
+            # Receive the message from the server
             msg = client.recv(SIZE).decode(FORMAT)
-            print(f"{colours.BOLD}{colours.YELLOW}✦{colours.ENDC}Received by the server:"
-                              f" {colours.BOLD}{colours.YELLOW}{msg}{colours.ENDC}\n")
+            # Check if the node got blocked, if yes, inform the user and quit
+            if msg == "blocked":
+                # print the data the server received
+                print(f"{colours.BOLD}{colours.RED}✦{colours.ENDC} Blocked by the server for sending"
+                      f"{colours.BOLD}{colours.RED} malicious data{colours.ENDC}\n")
+                connected = False
+            else:
+                # print the data the server received
+                print(f"{colours.BOLD}{colours.YELLOW}✦{colours.ENDC}Received by the server:"
+                                  f" {colours.BOLD}{colours.YELLOW}{msg}{colours.ENDC}\n")
 
         except:
             print(f"\n{colours.BOLD}{colours.RED}Could not send the message. Quitting...{colours.ENDC}")
