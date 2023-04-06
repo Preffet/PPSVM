@@ -43,7 +43,7 @@ def handle_client(conn, addr):
         malicious = False
         with open("detectionSystemFiles/blocklist.csv", "a+") as blocklist:
             if not (f"{addr[0]}:{addr[1]}" in blocklist.read()):
-                msg = conn.recv(SIZE).decode(FORMAT)
+                msg = conn.recv(SIZE)
 
             # if the message is empty, close the connection
             # but do not add the client to the blocklist
@@ -51,32 +51,42 @@ def handle_client(conn, addr):
 
                 # Print the message: Message from {IP}:{PORT} : {MESSAGE}
                 print(f"{colours.BOLD}{colours.YELLOW}✦{colours.ENDC}"
-                                  f"{colours.ENDC} Message from {addr[0]}:{addr[1]} :{colours.BOLD}{colours.YELLOW} {msg}{colours.ENDC}")
+                                  f"{colours.ENDC} Message from {addr[0]}:{addr[1]}:"
+                      f"{colours.BOLD}{colours.YELLOW} {msg.decode(FORMAT)}{colours.ENDC}",end = '')
 
-                # convert data to the required format
-                dataToCheck = [float(x) for x in msg.split(",")]
-                # check if it is anomalous using one class SVM
+
+
+                # check if the received data is anomalous using one class SVM
+                # send received data to the cloud to be checked
+                # and get the decision whether the data is anomalous
+                decision = handle_cloud(msg)
+
                 # if it is, inform the administrators and add the ip
                 # to the blocklist
-                if not SVM.anomaly_detection(dataToCheck).size == 0:
+                if not decision == "valid":
                     malicious = True
-                    # add ip to the blocklist
+                    data = [int(x) for x in msg.decode().split(",")]
+                    # Print malicious data received: {data}
                     print(f"\n{colours.BOLD}{colours.RED}⫸{colours.ENDC}"
                                       f" Malicious data received: {colours.BOLD}{colours.RED}"
-                                      f"{dataToCheck[0]},{dataToCheck[1]}{colours.ENDC}", end='')
+                                      f"{int(data[0])},{int(data[1])}{colours.ENDC}", end='')
+                    # add ip to the blocklist
                     currentDateAndTime = datetime.now()
                     blocklist.write(f"{addr[0]}:{addr[1]},{currentDateAndTime}\n")
+                    # Print: IP added to the blocklist {IP}
                     print(f"\n{colours.BOLD}{colours.RED}⫸{colours.ENDC}"
                                           f" IP added to the blocklist: {colours.BOLD}"
                                           f"{colours.RED}{addr[0]}:{addr[1]}{colours.ENDC}", end='')
-                # close the connection
-                if(malicious):
-                    connected=False
-                # Send the message back that it was
-                # received, if the message was not malicious
-                conn.send(msg.encode(FORMAT))
+
+                    # Inform the node that it got blocked and
+                    # close the connection
+                    msg = "blocked"
+                    conn.send(msg.encode(FORMAT))
+                    connected = False
+                    conn.close()
             else:
                 connected = False
+                conn.close()
     conn.close()
     # Print information about the closed connection
     # Connection closed {IP}:{PORT},
@@ -90,6 +100,36 @@ def handle_client(conn, addr):
     # Print the number of currently active connections
     print(f"{colours.BOLD}{colours.GREEN}⫸{colours.ENDC}"
           f" Active connections: {colours.BOLD}{colours.GREEN}{threading.activeCount() - 2}\n{colours.ENDC}")
+
+
+# Handle the communication between the
+# server and the cloud (SVM)
+def handle_cloud(msg):
+    port = 59999
+    address = (IP, port)
+
+    # set up the server-cloud connection
+    cloud_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    cloud_server.connect(address)
+
+    data_to_send = [float(x) for x in msg.decode(FORMAT).split(",")]
+
+    cloud_server.send(msg)
+    # send received data to the cloud
+
+    # print information: sent data to SVM: {data}
+    print(f"{colours.BOLD}{colours.ORANGE}✦{colours.ENDC}"
+              f"{colours.ENDC} Sent data to SVM:"
+              f"{colours.BOLD}{colours.ORANGE} {int(data_to_send[0])},{int(data_to_send[1])}{colours.ENDC}")
+
+    # receive the decision if the data is malicious
+    decision = cloud_server.recv(SIZE).decode(FORMAT)
+    # print information about the decision,
+    # decision: {decision}
+    print(f"{colours.BOLD}{colours.ORANGE}✦{colours.ENDC}"
+          f"{colours.ENDC} Returned decision:"
+          f"{colours.BOLD}{colours.ORANGE} {decision}{colours.ENDC}\n ")
+    return decision
 
 def main():
     try:
@@ -116,7 +156,9 @@ def main():
 
     # Quit if errors occur
     except:
+        print("error")
         sys.exit()
+
 
 if __name__ == "__main__":
     main()
