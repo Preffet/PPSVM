@@ -51,7 +51,7 @@ def main():
                 lines = f.readlines()
                 msg = random.choice(lines[1:])
             print(f"{colours.BOLD}{colours.CYAN}⫸{colours.ENDC} Sent: "
-                  f"{colours.BOLD}{colours.CYAN}{msg}{colours.ENDC}")
+                  f"{colours.BOLD}{colours.CYAN}{msg}{colours.ENDC}", end='')
             # Send the message to the server
             client.send(msg.encode(FORMAT))
 
@@ -59,8 +59,8 @@ def main():
             rcv_msg = client.recv(SIZE).decode(FORMAT)
             if rcv_msg == "blocked":
                 # print the data the server received
-                print(f"{colours.BOLD}{colours.RED}✦{colours.ENDC} Blocked by the server. Data:"
-                      f" {colours.BOLD}{colours.RED}{msg}{colours.ENDC}\n")
+                print(f"{colours.BOLD}{colours.RED}⫸{colours.ENDC} Blocked by the server, the data was"
+                      f" {colours.BOLD}{colours.RED} malicious{colours.ENDC}\n")
                 connected = False
             else:
                 # print the data the server received
