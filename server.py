@@ -142,6 +142,10 @@ def handle_cloud(msg):
               f"{colours.BOLD}{colours.RED} {decision}{colours.ENDC}\n ")
     return decision
 
+def inform_administrators():
+    pass
+
+
 def main():
     try:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
