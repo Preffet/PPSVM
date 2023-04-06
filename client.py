@@ -65,7 +65,7 @@ def main():
                 connected = False
             else:
                 # print the data the server received
-                print(f"{colours.BOLD}{colours.YELLOW}✦{colours.ENDC}Received by the server:"
+                print(f"{colours.BOLD}{colours.YELLOW}✦{colours.ENDC} Decision received from the server:"
                                   f" {colours.BOLD}{colours.YELLOW}{msg}{colours.ENDC}\n")
 
         except:
