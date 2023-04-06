@@ -1,6 +1,5 @@
 import random
 import socket
-from random import randrange
 import time
 import sys
 
@@ -55,10 +54,18 @@ def main():
                   f"{colours.BOLD}{colours.CYAN}{msg}{colours.ENDC}")
             # Send the message to the server
             client.send(msg.encode(FORMAT))
-            msg = client.recv(SIZE).decode(FORMAT)
-            if msg:
+
+            # Check if the node got blocked, if yes, inform the user and quit
+            rcv_msg = client.recv(SIZE).decode(FORMAT)
+            if rcv_msg == "blocked":
+                # print the data the server received
+                print(f"{colours.BOLD}{colours.RED}✦{colours.ENDC} Blocked by the server. Data:"
+                      f" {colours.BOLD}{colours.RED}{msg}{colours.ENDC}\n")
+                connected = False
+            else:
+                # print the data the server received
                 print(f"{colours.BOLD}{colours.YELLOW}✦{colours.ENDC}Received by the server:"
-                                  f" {colours.BOLD}{colours.YELLOW}{msg}{colours.ENDC}\n")
+                      f" {colours.BOLD}{colours.YELLOW}{msg}{colours.ENDC}\n")
         except:
             print(f"\n{colours.BOLD}{colours.RED}Could not send the message. Quitting...{colours.ENDC}")
             sys.exit()
