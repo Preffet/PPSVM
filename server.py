@@ -1,11 +1,17 @@
+import csv
 import os
 import socket
 import sys
 import threading
 from datetime import datetime
-import SVM
+import smtplib
 
 # variables for sending/receiving data
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.utils import make_msgid
+
+
 IP = socket.gethostbyname('localhost')
 PORT = 5568
 ADDR = (IP, PORT)
@@ -142,11 +148,44 @@ def handle_cloud(msg):
               f"{colours.BOLD}{colours.RED} {decision}{colours.ENDC}\n ")
     return decision
 
-def inform_administrators():
-    pass
 
+def send_email(date,time,ip,data):
+
+    # get admin email addresses
+    file = open("Email/adminEmail.csv", "r")
+    adminEmailAddress = file.read()
+    file.close()
+
+    port = 465  # For SSL
+    password = 'gcjdhpydrjstnibz'
+    sender_email = 'a15764291@gmail.com'
+    receiver_email = adminEmailAddress
+
+    # get the email html document
+    with open('Email/email.html', 'r',encoding='utf-8') as f:
+        html_string = f.read()
+
+    # replace placeholder text with the actual data
+    html_string = html_string.replace("{date}", date).replace("{time}", time).replace("{ip}", ip).replace("{data}", data)
+
+    # format the email
+    message = MIMEMultipart()
+    message['Subject'] = "Potential Malicious Node Identified on Network"
+    message['From'] = sender_email
+    message['To'] = receiver_email
+    # Attach the html doc defined earlier, as a MIMEText html content type to the MIME message
+    message.attach(MIMEText(html_string, "html"))
+    # Convert it as a string
+    email_string = message.as_string()
+
+    # send the email
+    server = smtplib.SMTP_SSL("smtp.gmail.com", port)
+    server.login(sender_email, password)
+    server.sendmail(sender_email, receiver_email, email_string)
+    server.quit()
 
 def main():
+    send_email("2021-06-05","11:11","192.0.0.1","0,200000")
     try:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.bind(ADDR)
