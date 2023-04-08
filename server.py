@@ -1,17 +1,11 @@
-import csv
 import os
 import socket
-import sys
 import threading
 from datetime import datetime
 import smtplib
-
-# variables for sending/receiving data
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.utils import make_msgid
-
 
 IP = socket.gethostbyname('localhost')
 PORT = 5568
@@ -29,6 +23,7 @@ class colours:
     RED = '\033[91m'
     BLUE = '\033[94m'
     ORANGE = '\033[38;5;173m'
+
 
 # Handle the communication between the server and the client
 def handle_client(conn, addr):
@@ -80,7 +75,7 @@ def handle_client(conn, addr):
                     # Print: IP added to the blocklist {IP}
                     print(f"\n{colours.BOLD}{colours.RED}⫸{colours.ENDC}"
                                           f" IP added to the blocklist: {colours.BOLD}"
-                                          f"{colours.RED}{addr[0]}:{addr[1]}{colours.ENDC}", end='')
+                                          f"{colours.RED}{addr[0]}:{addr[1]}{colours.ENDC}")
 
                     # Inform the node that it got blocked
                     message = "blocked"
@@ -132,7 +127,7 @@ def handle_cloud(msg):
     # print information: sent data to SVM: {data}
     print(f"{colours.BOLD}{colours.YELLOW}✦{colours.ENDC}"
               f"{colours.ENDC} Sent data to SVM:"
-              f"{colours.BOLD}{colours.YELLOW} {int(data_to_send[0])},{int(data_to_send[1])}{colours.ENDC}")
+              f"{colours.BOLD}{colours.YELLOW} {(data_to_send[0])},{(data_to_send[1])}{colours.ENDC}")
 
     # receive the decision if the data is malicious
     decision = cloud_server.recv(SIZE).decode(FORMAT)
@@ -149,7 +144,7 @@ def handle_cloud(msg):
     return decision
 
 
-def send_email(date,time,ip,data):
+def send_email(date, time, ip, data):
 
     # get admin email addresses
     file = open("Email/adminEmail.csv", "r")
@@ -186,6 +181,7 @@ def send_email(date,time,ip,data):
     server.sendmail(sender_email, receiver_email, email_string)
     server.quit()
 
+
 def attach_file_to_email(email_message, filename):
     # Open the attachment file for reading in binary mode, and make it a MIMEApplication class
     with open("detectionSystemFiles/blocklist.csv", "rb") as f:
@@ -197,6 +193,7 @@ def attach_file_to_email(email_message, filename):
     )
     # Attach the file to the message
     email_message.attach(file_attachment)
+
 
 def main():
     try:

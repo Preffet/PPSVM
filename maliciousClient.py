@@ -9,6 +9,7 @@ ADDR = (IP, PORT)
 SIZE = 1024
 FORMAT = "utf-8"
 
+
 # ANSI escape codes to print coloured/bold text
 class colours:
     ENDC = '\033[0m'
@@ -42,7 +43,7 @@ def main():
         print(f"\n{colours.BOLD}{colours.RED}Could not connect to the server. Quitting...{colours.ENDC}")
         sys.exit()
 
-    while(connected):
+    while connected:
         # Sleep for a bit
         time.sleep(10)
         try:
