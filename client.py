@@ -25,7 +25,6 @@ class colours:
 def main():
     # Connect to the server
     connected = False
-    # Catch the errors that occur when setting up the client
     try:
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.connect(ADDR)
@@ -38,13 +37,13 @@ def main():
               f" Connected to the server at {colours.BOLD}{colours.GREEN}{IP}:{PORT}{colours.YELLOW} 〙{colours.ENDC}")
         print(f"{colours.BLUE}------------{colours.CYAN}------------{colours.GREEN}------------"
               f"{colours.YELLOW}----------{colours.ENDC}\n")
+    # Catch the errors that occur when setting up the client
     except:
         connected = False
         print(f"\n{colours.BOLD}{colours.RED}Could not connect to the server. Quitting...{colours.ENDC}")
         sys.exit()
 
     while connected:
-        # Catch the errors that occur when sending messages
         try:
             # Sleep for a bit
             time.sleep(10)
@@ -69,6 +68,7 @@ def main():
                 print(f"{colours.BOLD}{colours.YELLOW}✦{colours.ENDC} Decision received from the server:"
                                   f" {colours.BOLD}{colours.YELLOW}{msg}{colours.ENDC}\n")
 
+        # Catch the errors that occur when sending messages
         except:
             print(f"\n{colours.BOLD}{colours.RED}Could not send the message. Quitting...{colours.ENDC}")
             sys.exit()
