@@ -7,6 +7,7 @@ from datetime import datetime
 import smtplib
 
 # variables for sending/receiving data
+from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import make_msgid
@@ -61,15 +62,11 @@ def handle_client(conn, addr):
                                   f"{colours.ENDC} Message from {addr[0]}:{addr[1]}:"
                       f"{colours.BOLD}{colours.YELLOW} {msg.decode(FORMAT)}{colours.ENDC}",end = '')
 
-
-
-                # check if the received data is anomalous using one class SVM
                 # send received data to the cloud to be checked
                 # and get the decision whether the data is anomalous
-                decision = handle_cloud(msg)
-
                 # if it is, inform the administrators and add the ip
                 # to the blocklist
+                decision = handle_cloud(msg)
                 if not decision == "valid":
                     malicious = True
                     data = [int(x) for x in msg.decode().split(",")]
@@ -85,17 +82,20 @@ def handle_client(conn, addr):
                                           f" IP added to the blocklist: {colours.BOLD}"
                                           f"{colours.RED}{addr[0]}:{addr[1]}{colours.ENDC}", end='')
 
-                    # Inform the node that it got blocked and
+                    # Inform the node that it got blocked
+                    message = "blocked"
+                    conn.send(message.encode(FORMAT))
+                    # email the administrators the information about the malicious node
+                    # and updated blocklist
+                    send_email(str(currentDateAndTime)[0:10], str(currentDateAndTime)[11:19], f"{addr[0]}:{addr[1]}", msg.decode())
                     # close the connection
-                    msg = "blocked"
-                    conn.send(msg.encode(FORMAT))
                     connected = False
                     conn.close()
 
                 # if the data is valid, inform the client
                 else:
-                    msg = "valid"
-                    conn.send(msg.encode(FORMAT))
+                    message = "valid"
+                    conn.send(message.encode(FORMAT))
             else:
                 connected = False
                 conn.close()
@@ -130,9 +130,9 @@ def handle_cloud(msg):
     # send received data to the cloud
 
     # print information: sent data to SVM: {data}
-    print(f"{colours.BOLD}{colours.ORANGE}✦{colours.ENDC}"
+    print(f"{colours.BOLD}{colours.YELLOW}✦{colours.ENDC}"
               f"{colours.ENDC} Sent data to SVM:"
-              f"{colours.BOLD}{colours.ORANGE} {int(data_to_send[0])},{int(data_to_send[1])}{colours.ENDC}")
+              f"{colours.BOLD}{colours.YELLOW} {int(data_to_send[0])},{int(data_to_send[1])}{colours.ENDC}")
 
     # receive the decision if the data is malicious
     decision = cloud_server.recv(SIZE).decode(FORMAT)
@@ -175,6 +175,8 @@ def send_email(date,time,ip,data):
     message['To'] = receiver_email
     # Attach the html doc defined earlier, as a MIMEText html content type to the MIME message
     message.attach(MIMEText(html_string, "html"))
+    # Attach the blocklist file
+    attach_file_to_email(message,"blocklist.csv")
     # Convert it as a string
     email_string = message.as_string()
 
@@ -184,8 +186,19 @@ def send_email(date,time,ip,data):
     server.sendmail(sender_email, receiver_email, email_string)
     server.quit()
 
+def attach_file_to_email(email_message, filename):
+    # Open the attachment file for reading in binary mode, and make it a MIMEApplication class
+    with open("detectionSystemFiles/blocklist.csv", "rb") as f:
+        file_attachment = MIMEApplication(f.read())
+    # Add header/name to the attachments
+    file_attachment.add_header(
+        "Content-Disposition",
+        f"attachment; filename= {filename}",
+    )
+    # Attach the file to the message
+    email_message.attach(file_attachment)
+
 def main():
-    send_email("2021-06-05","11:11","192.0.0.1","0,200000")
     try:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.bind(ADDR)
