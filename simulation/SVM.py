@@ -36,7 +36,7 @@ def anomaly_detection(conn,addr):
     mpl_use('MacOSX')
 
     # import training data
-    data = pd.read_csv("datasets/trainingLightData.csv")
+    data = pd.read_csv("../datasets/training_light_data.csv")
     # choose the features
     df = data[["hour", "light"]]
     # normalise the data

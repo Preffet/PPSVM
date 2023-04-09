@@ -1,3 +1,4 @@
+import csv
 import os
 import socket
 import threading
@@ -31,20 +32,26 @@ def handle_client(conn, addr):
     # New connection from {IP}:{PORT}
     print(f"\n{colours.BOLD}{colours.CYAN}⫸{colours.ENDC}"
           f" New connection from {colours.BOLD}{colours.CYAN}{addr[0]}:{addr[1]}\n",end = '')
+    # get the path to the clients.csv file
+    path_to_clients_csv = os.path.dirname(os.path.dirname(__file__))
+    path_to_clients_csv = path_to_clients_csv + "/detection_system_files/clients.csv"
     # Add the client to the clients.csv and assign id if the client does not already exist
-    with open("detectionSystemFiles/clients.csv", "r+") as file:
+    with open(path_to_clients_csv, "r+") as file:
         id = len(file.readlines())+1
         if not(f"{addr[0]}:{addr[1]}" in file.read()):
-            with open("detectionSystemFiles/clients.csv", "a") as f:
+            with open(path_to_clients_csv, "a") as f:
                 f.write(f"{id},{addr[0]}:{addr[1]}\n")
     connected = True
 
     # Run while the client is connected
     while connected:
+        malicious = False
+        # get the path to the blocklist.csv file
+        path_to_blocklist_csv = os.path.dirname(os.path.dirname(__file__))
+        path_to_blocklist_csv = path_to_blocklist_csv + "/detection_system_files/blocklist.csv"
         # check if the connected client is not in the blocklist,
         # if not, receive the message, else close the connection
-        malicious = False
-        with open("detectionSystemFiles/blocklist.csv", "a+") as blocklist:
+        with open(path_to_blocklist_csv, "a+") as blocklist:
             if not (f"{addr[0]}:{addr[1]}" in blocklist.read()):
                 msg = conn.recv(SIZE)
 
@@ -75,7 +82,7 @@ def handle_client(conn, addr):
                     # Print: IP added to the blocklist {IP}
                     print(f"\n{colours.BOLD}{colours.RED}⫸{colours.ENDC}"
                                           f" IP added to the blocklist: {colours.BOLD}"
-                                          f"{colours.RED}{addr[0]}:{addr[1]}{colours.ENDC}")
+                                          f"{colours.RED}{addr[0]}:{addr[1]}{colours.ENDC}",end='')
 
                     # Inform the node that it got blocked
                     message = "blocked"
@@ -146,18 +153,22 @@ def handle_cloud(msg):
 
 def send_email(date, time, ip, data):
 
-    # get admin email addresses
-    file = open("Email/adminEmail.csv", "r")
-    adminEmailAddress = file.read()
+    # get the path to the admin email addresses
+    path_to_emails = os.path.dirname(os.path.dirname(__file__))
+    path_to_emails = path_to_emails + "/Email/adminEmail.csv"
+    file = open(path_to_emails, "r")
+    admin_emails_string = file.read()
+    admin_emails_list = admin_emails_string.split(",")
     file.close()
 
     port = 465  # For SSL
     password = 'gcjdhpydrjstnibz'
     sender_email = 'a15764291@gmail.com'
-    receiver_email = adminEmailAddress
 
-    # get the email html document
-    with open('Email/email.html', 'r',encoding='utf-8') as f:
+    # get the path to the email html document
+    email_html = os.path.dirname(os.path.dirname(__file__))
+    email_html = email_html + "/Email/email.html"
+    with open(email_html, 'r', encoding='utf-8') as f:
         html_string = f.read()
 
     # replace placeholder text with the actual data
@@ -167,29 +178,32 @@ def send_email(date, time, ip, data):
     message = MIMEMultipart()
     message['Subject'] = "Potential Malicious Node Identified on Network"
     message['From'] = sender_email
-    message['To'] = receiver_email
+    message['To'] = admin_emails_string
     # Attach the html doc defined earlier, as a MIMEText html content type to the MIME message
     message.attach(MIMEText(html_string, "html"))
+    # get the path to the blocklist.csv file
+    path_to_blocklist_csv = os.path.dirname(os.path.dirname(__file__))
+    path_to_blocklist_csv = path_to_blocklist_csv + "/detection_system_files/blocklist.csv"
     # Attach the blocklist file
-    attach_file_to_email(message,"blocklist.csv")
+    attach_file_to_email(message, path_to_blocklist_csv)
     # Convert it as a string
     email_string = message.as_string()
 
     # send the email
     server = smtplib.SMTP_SSL("smtp.gmail.com", port)
     server.login(sender_email, password)
-    server.sendmail(sender_email, receiver_email, email_string)
+    server.sendmail(sender_email, admin_emails_list, email_string)
     server.quit()
 
 
 def attach_file_to_email(email_message, filename):
     # Open the attachment file for reading in binary mode, and make it a MIMEApplication class
-    with open("detectionSystemFiles/blocklist.csv", "rb") as f:
+    with open(filename, "rb") as f:
         file_attachment = MIMEApplication(f.read())
     # Add header/name to the attachments
     file_attachment.add_header(
         "Content-Disposition",
-        f"attachment; filename= {filename}",
+        f"attachment; filename= blocklist.csv",
     )
     # Attach the file to the message
     email_message.attach(file_attachment)

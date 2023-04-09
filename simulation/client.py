@@ -1,3 +1,4 @@
+import os
 import random
 import socket
 import time
@@ -47,8 +48,11 @@ def main():
         try:
             # Sleep for a bit
             time.sleep(10)
+            # get the path to the file with the valid data
+            path_to_data = os.path.dirname(os.path.dirname(__file__))
+            path_to_data = path_to_data + "/datasets/valid_light_data.csv"
             # Read a random line from the dataset containing valid sensor readings
-            with open("datasets/validLightData.csv") as f:
+            with open(path_to_data) as f:
                 lines = f.readlines()
                 msg = random.choice(lines[1:])
             print(f"{colours.BOLD}{colours.CYAN}⫸{colours.ENDC} Sent: "
