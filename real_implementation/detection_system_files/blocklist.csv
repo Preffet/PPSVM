@@ -1,3 +1,5 @@
-device_name, device_EUI, date and time added
-127.0.0.1:62389,2023-03-21 13:49:40.350569
-127.0.0.1:60588,2023-04-06 13:35:37.973485
+device_name, device_EUI, date and time first added
+SensorBox7,18610a3530408b09,2023-04-09 12:45
+SensorBox4,d8610a3530408b09,2023-04-10 20:35
+SensorBox1,o8610a3230408b09,2023-04-10 22:12
+SensorBox8,a8610a3530408b09,2023-04-11 12:39
