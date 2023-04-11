@@ -226,6 +226,7 @@ def main():
               f" The server is listening on {colours.BOLD}{colours.GREEN}"
               f"{IP}:{PORT}"
               f"{colours.YELLOW} 〙{colours.ENDC}")
+        # Print a text separator line
         print(f"{colours.BLUE}------------{colours.CYAN}------------{colours.GREEN}----------"
               f"{colours.YELLOW}------------{colours.ENDC}")
 
