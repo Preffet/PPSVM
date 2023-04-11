@@ -1,0 +1,6 @@
+device_name, device_EUI, date and time, malicious data
+SensorBox8,a8610a3530408b09,2023-04-10 12:15,2
+SensorBox7,18610a3530408b09,2023-04-09 12:45,1999999
+SensorBox4,d8610a3530408b09,2023-04-10 20:35,9000
+SensorBox1,o8610a3230408b09,2023-04-10 24:12,10000
+
