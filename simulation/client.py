@@ -32,10 +32,14 @@ def main():
         connected = True
         # Print the header - client IP address {IP}:{PORT}
         print(f"\n       "
-              f" Client IP {colours.BOLD}{colours.BLUE}{client.getsockname()[0]}:{client.getsockname()[1]}{colours.ENDC}")
+              f" Client IP "
+              f"{colours.BOLD}{colours.BLUE}"
+              f"{client.getsockname()[0]}:{client.getsockname()[1]}"
+              f"{colours.ENDC}")
         # Print the header - connected to the server at {IP}:{PORT}
         print(f"{colours.BOLD}{colours.BLUE}〘{colours.ENDC}"
-              f" Connected to the server at {colours.BOLD}{colours.GREEN}{IP}:{PORT}{colours.YELLOW} 〙{colours.ENDC}")
+              f" Connected to the server at {colours.BOLD}{colours.GREEN}"
+              f"{IP}:{PORT}{colours.YELLOW} 〙{colours.ENDC}")
         print(f"{colours.BLUE}------------{colours.CYAN}------------{colours.GREEN}------------"
               f"{colours.YELLOW}----------{colours.ENDC}\n")
     # Catch the errors that occur when setting up the client

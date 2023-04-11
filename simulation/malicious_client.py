@@ -5,10 +5,10 @@ import time
 import sys
 
 IP = socket.gethostbyname('localhost')
-PORT = 5568
-ADDR = (IP, PORT)
 SIZE = 1024
 FORMAT = "utf-8"
+PORT = 5568
+ADDR = (IP, PORT)
 
 
 # ANSI escape codes to print coloured/bold text
@@ -33,7 +33,10 @@ def main():
         connected = True
         # Print the header - client IP address {IP}:{PORT}
         print(f"\n       "
-              f" Client IP {colours.BOLD}{colours.BLUE}{client.getsockname()[0]}:{client.getsockname()[1]}{colours.ENDC}")
+              f" Client IP "
+              f"{colours.BOLD}{colours.BLUE}"
+              f"{client.getsockname()[0]}:{client.getsockname()[1]}"
+              f"{colours.ENDC}")
         # Print the header - connected to the server at {IP}:{PORT}
         print(f"{colours.BOLD}{colours.BLUE}〘{colours.ENDC}"
               f" Connected to the server at {colours.BOLD}{colours.GREEN}{IP}:{PORT}{colours.YELLOW} 〙{colours.ENDC}")
@@ -65,7 +68,7 @@ def main():
             if rcv_msg == "blocked":
                 # print the data the server received
                 print(f"{colours.BOLD}{colours.RED}⫸{colours.ENDC} Blocked by the server, the data was"
-                      f" {colours.BOLD}{colours.RED} malicious{colours.ENDC}\n")
+                      f" {colours.BOLD}{colours.RED}malicious{colours.ENDC}\n")
                 connected = False
             else:
                 # print the data the server received
