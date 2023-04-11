@@ -62,7 +62,7 @@ def send_email():
         # Attach the blocklist file
         attach_file_to_email(message, path_to_blocklist_csv, filename="blocklist.csv")
         # Attach received malicious data
-        attach_file_to_email(message, path_to_malicious_data, filename="malicious_data.csv")
+        attach_file_to_email(message, path_to_malicious_data, filename="anomalous_data.csv")
         # Convert it as a string
         email_string = message.as_string()
 
@@ -73,7 +73,7 @@ def send_email():
         server.quit()
         print(f"\n{colours.BOLD}{colours.GREEN}Email sent successfully{colours.ENDC}\n")
     except:
-        print(f"\n{colours.BOLD}{colours.RED}Unable to send the email to the administrators{colours.ENDC}\n")
+        print(f"\n{colours.BOLD}{colours.RED}Unable to send the email to the administrators, make sure that the admin_email.csv file is not empty and that you are connected to the Internet (not the Arduino gateway).{colours.ENDC}\n")
         return
 
 
