@@ -27,7 +27,7 @@ SIZE = 1024
 FORMAT = "utf-8"
 
 
-def anomaly_detection(conn,addr):
+def anomaly_detection(conn, addr):
 
     # Change/delete/update to other matplotLib back-end
     # if using other OS than MacOSX
@@ -59,11 +59,10 @@ def anomaly_detection(conn,addr):
               f" Data received: {colours.BOLD}{colours.BLUE}"
               f"{decoded_received_data[0]},{decoded_received_data[1]}{colours.ENDC}", end='')
 
-
         # convert the data to a dataframe
-        data_to_be_predicted = pd.DataFrame([decoded_received_data], columns = ["hour","light"])
+        data_to_be_predicted = pd.DataFrame([decoded_received_data], columns=["hour", "light"])
         # round values
-        data_to_be_predicted.light=round(data_to_be_predicted.light, -2)
+        data_to_be_predicted.light = round(data_to_be_predicted.light, -2)
         data_to_be_predicted.hour = round(data_to_be_predicted.hour)
 
         # normalise the data
@@ -76,7 +75,6 @@ def anomaly_detection(conn,addr):
         outlier_index = where(prediction == -1)
         # filter outlier values
         outlier_values = normalized_data_for_predictions.iloc[outlier_index]
-        decision = ""
         if not outlier_values.size == 0:
             decision = "anomalous"
             # print that the received data is anomalous
@@ -151,27 +149,28 @@ if __name__ == "__main__":
 
 def main():
     port = 59999
-    IP = socket.gethostbyname('localhost')
-    address = (IP, port)
+    ip_addr = socket.gethostbyname('localhost')
+    address = (ip_addr, port)
 
     # Print information: Listening on {IP}:{PORT}
     print(f"\n{colours.BOLD}{colours.BLUE}〘{colours.ENDC}"
-              f" Cloud SVM service is listening on {colours.BOLD}{colours.GREEN}{IP}:{port}{colours.YELLOW} 〙{colours.ENDC}")
+        f" Cloud SVM service is listening on {colours.BOLD}"
+        f"{colours.GREEN}{ip_addr}:{port}{colours.YELLOW} 〙{colours.ENDC}")
     print(f"{colours.BLUE}--------------{colours.CYAN}--------------{colours.GREEN}--------------"
-              f"{colours.YELLOW}--------------{colours.ENDC}")
+        f"{colours.YELLOW}--------------{colours.ENDC}")
 
     # set up the server-cloud connection
-    SVM_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    SVM_server.bind(address)
-    SVM_server.listen()
+    svm_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    svm_server.bind(address)
+    svm_server.listen()
 
     # Main program loop
     while True:
         # Wait for the server to connect and accept the connection
-        conn, addr = SVM_server.accept()
+        conn, addr = svm_server.accept()
 
         # Do anomaly detection
-        anomaly_detection(conn,addr)
+        anomaly_detection(conn, addr)
 
         # Create a separate thread to handle separate data
         thread = threading.Thread(target=anomaly_detection, args=(conn, addr))
