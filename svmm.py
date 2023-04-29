@@ -1,256 +1,181 @@
-import numpy
 import numpy as np
-import pandas as pd # for CSV file I/O operations
-from matplotlib import pyplot as plt
-from numpy import where, ndarray
-from sklearn import svm, preprocessing
-from sklearn.inspection import DecisionBoundaryDisplay
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report, accuracy_score
-from sklearn import svm
-from matplotlib import use as mpl_use
-mpl_use('MacOSX')
-import matplotlib.lines as mlines
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_extraction.text import TfidfVectorizer
+import pandas as pd
+from sklearn import model_selection, svm, metrics
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import cross_validate
+from sklearn.preprocessing import MinMaxScaler
+from warnings import simplefilter
+from abstract_data_privatiser import ABCPrivacyPreserver
+from sklearn.exceptions import ConvergenceWarning
+from sklearn.model_selection import train_test_split
+simplefilter("ignore", category=ConvergenceWarning)
 
 
-from abstractPrivatizer import AbstractPrivatizer
-class LaplacePrivatizer(AbstractPrivatizer):
-  _mean = 0.0
-  _epsilon = 1.0
+# ANSI escape codes to print coloured/bold text
+class colours:
+    ENDC = '\033[0m'
+    CYAN = '\033[96m'
+    BOLD = '\033[1m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
 
-  def __init__(self, epsilon=1.):
-    if (type(epsilon) != float):
-      raise ValueError('Not a valid epsilon')
-    if (epsilon <= 0.0):
-      raise ValueError('Not a valid epsilon')
-    self._epsilon = epsilon
 
-  def privatizeSingleAnswer(self, value, sensitivityValue=1.):
-    sanitizedTruth = 0
+class LaplacePrivacyPreserver(ABCPrivacyPreserver):
+  # default values
+  mean_value = 0.0
+  epsilon_value = 1.0
+
+  def __init__(self, epsilon_val=1.0):
+    # check if provided epsilon value is valid
+    if type(epsilon_val) != float:
+      raise ValueError('Epsilon value has to be a float')
+    if epsilon_val <= 0.0:
+      raise ValueError('Epsilon value has to be >0.0')
+    self.epsilon_value = epsilon_val
+
+  def privatise_single_value(self, data, sensitivity_level=1.0):
+    # convert it to a float
     try:
-      sanitizedTruth = float(value)
+      float_value = float(data)
     except:
-      raise ValueError('Not valid value to be privatized')
-    sensitivityValue = max(0.00001, sensitivityValue)
-    noise = np.random.laplace(self._mean, sensitivityValue / self._epsilon, 1)[0]
-    return float(sanitizedTruth + noise)
+      raise ValueError('The value to be sanitised has to be float')
+    # define the sensitivity value:
+    # how much of an impact can an individual value
+    # have on the outcome of the queries?
+    sensitivity_level = max(0.001, sensitivity_level)
+    # ddd noise to the value:
+    # epsilon attribute represents the privacy budget,
+    # which is a measure of how much privacy is being
+    # provided to the data. Together with the sensitivity
+    # it determines the scale of the noise added to the data.
+    # the noise is drawn from the Laplace distribution
+    noise_value = np.random.laplace(self.mean_value, sensitivity_level / self.epsilon_value, 1)[0]
+    return float(float_value + noise_value)
 
-class GeneralAdapter:
-  dimensions = 2
-  initialVaue = 0
-  def __init__(self, dimensions, initialValue = 0):
-    self.dimensions = dimensions
-    self.initialValue = initialValue
 
-  def fromRaw(self, rawData):
-    if (type(rawData) == np.ndarray):
-      adaptedData = []
-      for data in rawData:
-        adaptedData.append(self.fromRaw(data))
-      return adaptedData
-    else:
-      return self.toFloat(rawData)
+class DataConverter:
+    # convert np array into a list
+    def convert_from_original(self, original_data):
+        if type(original_data) == np.ndarray:
+            converted_data = []
+            # loop through all the data entries
+            for value in original_data:
+                converted_data.append(self.convert_from_original(value))
+            return converted_data
+        else:
+            return self.covert_to_float(original_data)
 
-  def toFloat(self, value):
-    try:
-      return float(value)
-    except:
-      raise ValueError('Cannot parse to float')
+    # convert the data to a float
+    def covert_to_float(self, data):
+        try:
+            return float(data)
+        except:
+            # inform the user if errors occur
+            raise ValueError('Data could not be converted to float')
 
-  def toDiscreteValue(self, data):
-    if type(data) == list:
-      intList = []
-      for value in data:
-        intList.append(self.toDiscreteValue(value))
-      return intList
-    elif type(data) == float:
-      discreteWithZeroMean = round(data - self.initialValue)
 
-      discreteWithinBounds = 0
-      if (discreteWithZeroMean >= (self.dimensions-1)):
-        discreteWithinBounds = self.dimensions-1
-      elif(discreteWithZeroMean <= 0):
-        discreteWithinBounds = 0
-      else:
-        discreteWithinBounds = discreteWithZeroMean % self.dimensions
-
-      discreteValue = discreteWithinBounds + self.initialValue
-      return discreteValue
-    else:
-      raise ValueError('It only accepts lists of float values')
-
+# Program Entry Point
 def main():
-    df = pd.read_csv('more.csv', header=0, sep=',')
+    # import the dataset (with the headers)
+    df = pd.read_csv('datasets/first_half_of_day_data_1.csv', header=0, sep=',')
 
-    X = df.loc[:, ['time', 'lux']]
-    y = df['label']
+    # define the scaler
+    scaler = MinMaxScaler()
+
+    # get X and y values from the dataset
+    X = df.loc[:, ['Float time value', 'Lux']]
+    y = df['Label']
 
     # convert to numpy array
     X = X.values
-    max_time,max_light = X.max(axis=0)
-    min_time, min_light = X.min(axis=0)
     y = y.values
 
+    # split the data into train and test datasets
+    # 70% for training, 30% for predictions
+    X_train, X_test, y_train, y_test = train_test_split(X, y,test_size=0.3)
 
-    from sklearn.model_selection import train_test_split
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=990)
-    # normalise the data
-    normalized_training_data = df / df.max()
+    # normalise the data (X training and testing values)
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.fit_transform(X_test)
 
-    clf = svm.SVC(kernel='linear')
-    # learn from the data
+    # define the model
+    clf = svm.SVC(C=10, max_iter=10000, kernel='linear')
+    # fit the data
     clf.fit(X_train, y_train)
 
-    # Predict the test set
-    predictions = clf.predict(X_test)
 
-    print(str(accuracy_score(y_test, predictions)).replace('.', ','))
-    print("predictions")
+    kfold = model_selection.KFold(n_splits=10,shuffle=True)
+    scoring_values = ['accuracy']
+    # make a prediction on unseen data
+    y_train_pred = clf.predict(X_test)
+    results = cross_validate(estimator=clf,
+                             X=X_train,
+                             y=y_train,
+                             cv=kfold,
+                             scoring=scoring_values,
+                             return_train_score=True)
+    # Print statistics
+    print(f"{colours.BOLD}{colours.GREEN}⫸"
+          f"{colours.ENDC}Average Cross Validation Accuracy using clean data"
+          f"{colours.BOLD}{colours.GREEN} {sum(results['train_accuracy'])/10}\n{colours.ENDC}", end='')
 
+    print(f"{colours.BOLD}{colours.GREEN}⫸"
+          f"{colours.ENDC}Accuracy predicting clean unseen data using clean training data"
+          f"{colours.BOLD}{colours.GREEN} {(accuracy_score(y_test, y_train_pred))}\n{colours.ENDC}")
 
-    # get the separating hyperplane
-    fig, ax = plt.subplots(1, 1,squeeze=True)
-    for i in range(len(clf.coef_)):
-        w = clf.coef_[i]
-        a = -w[0] / w[1]
-        xx = np.linspace(min_time,max_time)
-        yy = a * xx - (clf.intercept_[i]) / w[1]
-        ax.plot(xx,yy, 'k-')
-        DecisionBoundaryDisplay.from_estimator(
-            clf,
-            X,
-            plot_method="contour",
-            colors="k",
-            levels=[-1, 0, 1],
-            alpha=0.5,
-            linestyles=["--", "-", "--"],
-            ax=ax,
-        )
+    # define the data adapter
+    ad = DataConverter()
+    # reset x_train to original values,
+    # normalisation will be done after adding noise
+    X_train = scaler.inverse_transform(X_train)
+    dataInput = ad.convert_from_original(X_train)
+    dataTarget = ad.convert_from_original(y_train)
+    # define data privatiser
+    privatizer = LaplacePrivacyPreserver(1.0)
+    # get data sensitivity value
+    inputSensitivity = privatizer.get_data_sensitivity_values(dataInput)
 
-    # Generate scatter plot for training data
-    # filter out valid training data values
-    valid_training_data = where(y_train == 1)
-    valid_training_data_values = X_train[valid_training_data]
-    # plot valid training values
-    for x in range(valid_training_data_values.shape[0]):
-        ax.scatter(valid_training_data_values[x][0], valid_training_data_values[x][1]
-                    , color='#00FF00', label="Learned Valid Values", marker="o", s=200, alpha=.5)
-
-    # filter out invalid training data values
-    invalid_training_data = where(y_train == 0)
-    invalid_training_data_values = X_train[invalid_training_data]
-
-    # plot invalid training values
-    for x in range(invalid_training_data_values.shape[0]):
-        ax.scatter(invalid_training_data_values[x][0],
-                   invalid_training_data_values[x][1],
-                   color='#DF2E38',
-                   label="Learned Invalid Values",
-                   marker="o", s=200, alpha=.5)
-
-    # filter predicted valid data
-    # filter valid data indexes
-    valid_index = where(predictions == 1)
-    # filter filter valid data values
-    valid_values = X_test[valid_index]
-
-    # filter predicted invalid data indexes
-    outlier_index = where(predictions == 0)
-    # filter outlier values
-    outlier_values = X_test[outlier_index]
-
-    for x in range(outlier_values.shape[0]):
-        ax.scatter(outlier_values[x][0],
-                   outlier_values[x][1],
-                   color='#DF2E38',
-                   label="Predicted Anomalous Values",
-                   marker="*", s=200, alpha=.6,edgecolor="k")
-
-    for x in range(valid_values.shape[0]):
-        ax.scatter(valid_values[x][0],
-                    valid_values[x][1],
-                    color='#00FF00',
-                    label="Predicted Valid Values",
-                    marker="*",
-                    s=200,
-                    alpha=.6,
-                    edgecolor="k",)
-
-    # plot support vectors
-    ax.scatter(
-        clf.support_vectors_[:, 0],
-        clf.support_vectors_[:, 1],
-        s=100,
-        facecolors="None",
-        edgecolor='black',
-        linewidth=2,
-    )
-
-    plt.xlabel('Time')
-    plt.ylabel('Illuminance (Lux)')
-
-
-
-    green = '#00FF00'
-    red = '#DF2E38'
-
-    red_data = mlines.Line2D([], [], color=red, marker='o', linestyle='None',
-                                  markersize=10, label='Learned Invalid Data', alpha=.6)
-    green_data = mlines.Line2D([], [], color=green, marker='o', linestyle='None',
-                                  markersize=10, label='Learned Valid Data', alpha=.6)
-    predicted_data_valid = mlines.Line2D([], [], color=green, marker='*', linestyle='None',
-                                  markersize=10, label='Predicted Valid Data', alpha=.6,markeredgecolor='k')
-    predicted_data_invalid = mlines.Line2D([], [], color=red, marker='*', linestyle='None',
-                                  markersize=10, label='Predicted Invalid Data', alpha=.6,markeredgecolor='k')
-    hyperplane = mlines.Line2D([], [], color='k', linestyle='-',
-                                  markersize=10, label='Hyperplane', alpha=.6,markeredgecolor='k')
-
-
-    plt.xticks(np.arange(0, 5, 1.0))
-    plt.xlabel("Time")
-    plt.ylabel("Light Level (Lux)")
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
-              ncol=3, fancybox=True, shadow=True,
-              handles=[green_data,predicted_data_valid,red_data,predicted_data_invalid, hyperplane])
-
-
-    # show the plot
-    plt.show()
-    # save the plot
-    plt.savefig('collectedLightData.png')
-
-
-
-
-    ad = GeneralAdapter(7, 1)
-
-    dataInput = ad.fromRaw(X)
-    dataTarget = ad.fromRaw(y)
-
-    privatizer = LaplacePrivatizer(1.0)
-
-    inputSensitivity = privatizer.getSensitivityList(dataInput)
-    targetSensitivity = 7
-
-    #     epsilon = [1.0, 1.5, 2.0, 2.5, 3.0]
-    epsilon = [30.0, 20.0, 10.0, 5.0, 4.0, 3.0, 2.0, 1.0, 0.5, 0.01, 0.001]
-
-    privatizer = LaplacePrivatizer(1.0)
-    privateData = privatizer.privatize(dataInput, sensitivityList=inputSensitivity)
+    # define test epsilon values
+    epsilon = [30.0, 15.0, 10.0, 5.0, 2.5, 1.0, 0.01]
+    # define classifier and k-fold values for the tests with privatised data
+    clf2 = svm.SVC(C=100, max_iter=1000, kernel='linear')
+    kfold2 = model_selection.KFold(n_splits=10, shuffle=True)
+    # test each epsilon value using cross validation
     for i in epsilon:
-        privatizer = LaplacePrivatizer(i)
-        privateData = privatizer.privatize(dataInput, sensitivityList=inputSensitivity)
-
-        #         privateTargetsFloat = privatizer.privatize(dataTarget, sensitivityList = targetSensitivity)
-        #         privateTargets = ad.toDiscreteValue(privateTargetsFloat)
+        privatizer = LaplacePrivacyPreserver(i)
+        privateData = privatizer.privatise_data(dataInput, sensitivity_values_list=inputSensitivity)
+        # normalise the data
+        privateData = scaler.fit_transform(privateData)
+        # could test noisy labels too, but that is future work
         privateTargets = dataTarget
+        # fit the data
+        clf2.fit(privateData, privateTargets)
+        scoring_values = ['accuracy']
+        # run cross validation
+        results2 = cross_validate(
+            estimator=clf2,
+            X=privateData,
+            y=privateTargets,
+            cv=kfold2,
+            scoring=scoring_values,
+            return_train_score=True)
+        # print the statistics:
+        # Epsilon x cross validation accuracy,
+        # Accuracy using epsilon x to predict unseen clean data
+        print(f"{colours.BOLD}{colours.CYAN}⫸"
+              f"{colours.ENDC} Epsilon {colours.BOLD}{colours.YELLOW}{i}"
+              f"{colours.ENDC} Cross Validation Accuracy: "
+              f"{colours.BOLD}{colours.CYAN}"
+              f"{sum(results2['train_accuracy'])/10}{colours.ENDC}")
+        y_train_pred2 = clf2.predict(X_test)
+        print(f"{colours.BOLD}{colours.CYAN}⫸"
+              f"{colours.ENDC}{colours.ENDC} Accuracy using Epsilon "
+              f"{colours.BOLD}{colours.YELLOW}{i}{colours.ENDC} "
+              f"data to predict unseen clean data"
+              f"{colours.BOLD}{colours.CYAN} {(accuracy_score(y_test, y_train_pred2))}"
+              f"\n{colours.ENDC}")
 
-        clf = svm.SVC(kernel='linear')
-        clf.fit(privateData, privateTargets)
 
-        y_pred = clf.predict(X_test)
-        print(str(accuracy_score(y_test, y_pred)).replace('.', ','))
-
+# Program entry point
 if __name__ == '__main__':
     main()
