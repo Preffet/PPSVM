@@ -2,6 +2,7 @@
 from numpy import where
 import pandas as pd
 # Model and performance
+from sklearn import svm
 from sklearn.svm import OneClassSVM
 from matplotlib import use as mpl_use
 # networking
@@ -29,28 +30,27 @@ FORMAT = "utf-8"
 
 def anomaly_detection(conn, addr):
 
-    # Change/delete/update to other matplotLib back-end
+    # to plot some data,
+    # change/delete/update to other matplotLib back-end
     # if using other OS than MacOSX
     # I had to add this as the default one
-    # caused the app to crash while running on my laptop
-    mpl_use('MacOSX')
+    # caused the app to crash while running the app on my laptop
+    # mpl_use('MacOSX')
 
-    # import training data
-    data = pd.read_csv("../datasets/training_light_data.csv")
+    # import training data, specify that it has a header
+    data = pd.read_csv("../datasets/first_half_of_day_data_1.csv",header=0)
     # choose the features
-    df = data[["hour", "light"]]
+    df = data[["Lux","Float time value"]]
     # normalise the data
 
     normalized_training_data = df / df.max()
-
     # model specification
-    model = OneClassSVM(kernel='rbf', gamma=39, nu=0.03)
-    model.fit(normalized_training_data)
+    model = svm.SVC(kernel='rbf', C=1.0)
+    model.fit(normalized_training_data[["Lux", "Float time value"]],data["Label"])
     # max df value (to be used for data normalisation)
     max_df_value = df.max()
     # receive the data from the server
     msg = conn.recv(SIZE).decode(FORMAT)
-
     if not (len(msg) <= 0):
         decoded_received_data = [float(x) for x in msg.split(",")]
 
@@ -60,11 +60,9 @@ def anomaly_detection(conn, addr):
               f"{decoded_received_data[0]},{decoded_received_data[1]}{colours.ENDC}", end='')
 
         # convert the data to a dataframe
-        data_to_be_predicted = pd.DataFrame([decoded_received_data], columns=["hour", "light"])
-        # round values
-        data_to_be_predicted.light = round(data_to_be_predicted.light, -2)
-        data_to_be_predicted.hour = round(data_to_be_predicted.hour)
-
+        print("data to be predicted")
+        data_to_be_predicted = pd.DataFrame([decoded_received_data], columns=["Lux", "Float time value"])
+        print(data_to_be_predicted)
         # normalise the data
         normalized_data_for_predictions = data_to_be_predicted / max_df_value
 
@@ -148,7 +146,7 @@ if __name__ == "__main__":
 
 
 def main():
-    port = 59999
+    port = 59998
     ip_addr = socket.gethostbyname('localhost')
     address = (ip_addr, port)
 
