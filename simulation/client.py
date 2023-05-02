@@ -4,15 +4,21 @@ import socket
 import time
 import sys
 
+# Public variables
+# IP address used for client-server connection
 IP = socket.gethostbyname('localhost')
-PORT = 5568
+# port used for client-server connection
+PORT = 1223
+# full address
 ADDR = (IP, PORT)
+# message size
 SIZE = 1024
+# message format
 FORMAT = "utf-8"
 
 
 # ANSI escape codes to print coloured/bold text
-class colours:
+class Colours:
     ENDC = '\033[0m'
     CYAN = '\033[96m'
     BOLD = '\033[1m'
@@ -23,64 +29,80 @@ class colours:
     ORANGE = '\033[38;5;173m'
 
 
+# Program entry point
 def main():
-    # Connect to the server
+    # Try to connect to the server
     connected = False
     try:
+        # setup sockets
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.connect(ADDR)
         connected = True
         # Print the header - client IP address {IP}:{PORT}
         print(f"\n       "
               f" Client IP "
-              f"{colours.BOLD}{colours.BLUE}"
+              f"{Colours.BOLD}{Colours.BLUE}"
               f"{client.getsockname()[0]}:{client.getsockname()[1]}"
-              f"{colours.ENDC}")
+              f"{Colours.ENDC}")
         # Print the header - connected to the server at {IP}:{PORT}
-        print(f"{colours.BOLD}{colours.BLUE}〘{colours.ENDC}"
-              f" Connected to the server at {colours.BOLD}{colours.GREEN}"
-              f"{IP}:{PORT}{colours.YELLOW} 〙{colours.ENDC}")
-        print(f"{colours.BLUE}------------{colours.CYAN}------------{colours.GREEN}------------"
-              f"{colours.YELLOW}----------{colours.ENDC}\n")
-    # Catch the errors that occur when setting up the client
+        print(f"{Colours.BOLD}{Colours.BLUE}〘{Colours.ENDC}"
+              f" Connected to the server at {Colours.BOLD}{Colours.GREEN}"
+              f"{IP}:{PORT}{Colours.YELLOW} 〙{Colours.ENDC}")
+        print(f"{Colours.BLUE}------------{Colours.CYAN}------------{Colours.GREEN}------------"
+              f"{Colours.YELLOW}----------{Colours.ENDC}\n")
+    # Catch the errors that occur when setting up the connection
     except:
         connected = False
-        print(f"\n{colours.BOLD}{colours.RED}Could not connect to the server. Quitting...{colours.ENDC}")
+        print(f"\n{Colours.BOLD}{Colours.RED}"
+              f"Could not connect to the server. Quitting..."
+              f"{Colours.ENDC}")
         sys.exit()
 
+    # when client successfully connects to the server
+    # every 10s send randomly chosen data from
+    # the valid.csv file to simulate an honest sensor node
     while connected:
         try:
-            # Sleep for a bit
+            # sleep for a bit
             time.sleep(10)
             # get the path to the file with the valid data
             path_to_data = os.path.dirname(os.path.dirname(__file__))
-            path_to_data = path_to_data + "/datasets/valid_light_data.csv"
+            path_to_data = path_to_data + "/datasets/valid.csv"
             # Read a random line from the dataset containing valid sensor readings
             with open(path_to_data) as f:
                 lines = f.readlines()
                 msg = random.choice(lines[1:])
-            print(f"{colours.BOLD}{colours.CYAN}⫸{colours.ENDC} Sent: "
-                  f"{colours.BOLD}{colours.CYAN}{msg}{colours.ENDC}", end='')
-            # Send the message to the server
+            print(f"{Colours.BOLD}{Colours.CYAN}⫸{Colours.ENDC} Sent: "
+                  f"{Colours.BOLD}{Colours.CYAN}{msg}{Colours.ENDC}", end='')
+            # send the message to the server
             client.send(msg.encode(FORMAT))
-            # Receive the message from the server
+            # receive the message from the server
             msg = client.recv(SIZE).decode(FORMAT)
-            # Check if the node got blocked, if yes, inform the user and quit
+            # check if the node got blocked, if yes,
+            # print the information
             if msg == "blocked":
                 # print the data the server received
-                print(f"{colours.BOLD}{colours.RED}✦{colours.ENDC} Blocked by the server for sending"
-                      f"{colours.BOLD}{colours.RED} malicious data{colours.ENDC}\n")
+                # and that the node got blocked
+                print(f"{Colours.BOLD}{Colours.RED}✦{Colours.ENDC}"
+                      f" Blocked by the server for sending"
+                      f"{Colours.BOLD}{Colours.RED} "
+                      f"malicious data{Colours.ENDC}\n")
+                # disconnect
                 connected = False
             else:
                 # print the data the server received
-                print(f"{colours.BOLD}{colours.YELLOW}✦{colours.ENDC} Decision received from the server:"
-                                  f" {colours.BOLD}{colours.YELLOW}{msg}{colours.ENDC}\n")
+                print(f"{Colours.BOLD}{Colours.YELLOW}✦{Colours.ENDC}"
+                      f" Decision received from the server:"
+                      f" {Colours.BOLD}{Colours.YELLOW}{msg}{Colours.ENDC}\n")
 
         # Catch the errors that occur when sending messages
         except:
-            print(f"\n{colours.BOLD}{colours.RED}Could not send the message. Quitting...{colours.ENDC}")
+            print(f"\n{Colours.BOLD}{Colours.RED}"
+                  f"Could not send the message. Quitting..."
+                  f"{Colours.ENDC}")
             sys.exit()
 
 
+# Program entry point
 if __name__ == "__main__":
     main()
