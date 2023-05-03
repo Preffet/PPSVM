@@ -8,7 +8,7 @@ green_colour = ['#6bb002']
 green = [x for x in green_colour for reps in range(7)]
 red = ['#F90627']
 # load the dataset
-df = pd.read_csv('datasets/all_data/all_data_including_anomalous.csv', header=0, sep=',')
+df = pd.read_csv('./datasets/all_data/all_data_including_anomalous.csv', header=0, sep=',')
 all_data = df.loc[:, ['Date', 'Float time value', 'Lux', 'Label']]
 # filter the valid and invalid data entries
 anomalous_data = all_data.loc[df['Label'] == 0]
@@ -38,4 +38,4 @@ custom_lines = [Line2D([0], [0], color='#6bb002', lw=4),
 plot.legend(custom_lines, ['Valid Data', 'Anomalous Data'], loc = "upper left",fancybox=True, framealpha=0.9)
 #plot = sns.lineplot(data=anomalous_data, x="Float time value", y="Lux", hue="Date",linewidth = 3.5, palette=['#0ad2ff', '#8bd346', '#16a4d8', '#f9a52c', '#ec458d', '#efdf48', '#9b5fe0'], alpha  = 0.55, err_style='band')
 fig = plot.get_figure()
-fig.savefig("all-collected-data-with-anomalies.png")
+fig.savefig("./helper_scripts/plots/all-collected-data-with-anomalies.png")

@@ -2,6 +2,11 @@ import pandas as pd
 from datetime import datetime
 
 
+# ANSI escape codes to print coloured text
+class Colours:
+    ENDC = '\033[0m'
+    BLUE = '\033[94m'
+
 # function to locate empty and NaN columns in the dataset
 def check_for_empty_cells(data_frame):
     missing_cols, missing_rows = (
@@ -37,17 +42,19 @@ def validate_lux(val):
 def validate_date(val):
     # check the data type
     try:
-        datetime.strptime(val['Date'],'%Y-%m-%d')
+        datetime.strptime(val['Date'],'%m/%d/%Y')
     except:
-        print("Invalid date date found:")
+        print("Invalid date found:")
         print(val)
 
 
 # program entry point
 def main():
+    print(f"{Colours.BLUE}Running this script will provide information about any invalid data present in the dataset.")
+    print(f"If this is the only message displayed, then all the data in the dataset is valid.{Colours.ENDC}")
     # open the file which contains the dataset for reading
     df = pd.read_csv(
-        "datasets/all_data/collected_light_data.csv",
+        "./datasets/all_data/all_collected_valid_data.csv",
             sep=",",
             header=0)
     # convert values to strings
