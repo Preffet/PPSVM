@@ -12,7 +12,7 @@ FORMAT = "utf-8"
 # ip address used for client-server connection
 IP = socket.gethostbyname('localhost')
 # port number used for client-server connection
-PORT = 1223
+PORT = 1228
 # full address
 ADDR = (IP, PORT)
 
@@ -41,7 +41,7 @@ def main():
         connected = True
         # Print the header - client IP address {IP}:{PORT}
         print(f"\n       "
-              f" Client IP "
+              f" Malicious Client IP "
               f"{Colours.BOLD}{Colours.BLUE}"
               f"{client.getsockname()[0]}:{client.getsockname()[1]}"
               f"{Colours.ENDC}")
@@ -63,7 +63,7 @@ def main():
         try:
             # get the path to the file with the malicious data
             path_to_data = os.path.dirname(os.path.dirname(__file__))
-            path_to_data = path_to_data + "/datasets/invalid_light_data.csv"
+            path_to_data = path_to_data + "/datasets/simulation_nodes/malicious/malicious.csv"
             # read a random line from the dataset containing invalid sensor readings
             with open(path_to_data) as file:
                 lines = file.readlines()
@@ -72,7 +72,7 @@ def main():
             print(f"{Colours.BOLD}{Colours.CYAN}⫸"
                   f"{Colours.ENDC} Sent: "
                   f"{Colours.BOLD}{Colours.CYAN}"
-                  f"{message}{Colours.ENDC}", end='')
+                  f"{message}{Colours.ENDC}")
             # send the message to the server
             client.send(message.encode(FORMAT))
 

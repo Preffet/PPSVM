@@ -13,7 +13,7 @@ IP = socket.gethostbyname('localhost')
 # message size
 SIZE = 1024
 # port used for client-server connection
-PORT = 1223
+PORT = 1228
 # full address for client-server connection
 ADDR = (IP, PORT)
 # port used for server-cloud(SVM) connection
@@ -85,6 +85,7 @@ def send_email(date, time, ip, data):
     server.login(sender_email, password)
     server.sendmail(sender_email, admin_emails_list, email_string)
     server.quit()
+# ------------------------------------------------------------------------------ #
 
 
 # attach the blocklist csv file to the email
@@ -100,6 +101,7 @@ def attach_file_to_email(email_message, filename):
     )
     # Attach the file to the message
     email_message.attach(file_attachment)
+# ------------------------------------------------------------------------------ #
 
 
 # Handle the communication between the server and the client
@@ -144,6 +146,7 @@ def handle_client(conn, addr):
                       f"{Colours.ENDC} Message from {addr[0]}:{addr[1]}:"
                       f"{Colours.BOLD}{Colours.YELLOW}"
                       f" {msg.decode(FORMAT)}{Colours.ENDC}", end='')
+
 
                 # send received data to the cloud to be checked
                 # and get the decision whether the data is anomalous
@@ -197,7 +200,7 @@ def handle_client(conn, addr):
     # reason: {reason for closing the connection}
     # also, update the number of currently active connections
     reason = "closed by the client" if not malicious else "malicious node"
-    print(f"\n{Colours.BOLD}{Colours.RED}⫸{Colours.ENDC}"
+    print(f"{Colours.BOLD}{Colours.RED}⫸{Colours.ENDC}"
           f" Connection closed {Colours.BOLD}{Colours.RED}"
           f"{addr[0]}:{addr[1]}{Colours.ENDC}")
     print(f"   Reason: "
@@ -207,40 +210,57 @@ def handle_client(conn, addr):
     print(f"{Colours.BOLD}{Colours.GREEN}⫸{Colours.ENDC}"
           f" Active connections: {Colours.BOLD}"
           f"{Colours.GREEN}{threading.activeCount() - 2}\n{Colours.ENDC}", end='')
+# ------------------------------------------------------------------------------ #
 
 
 # Handle the communication between the
 # server and the cloud (SVM)
 def handle_cloud(msg):
-
+    decision = "valid"
     # set up the server-cloud connection
     cloud_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     cloud_server.connect(SVM_ADDR)
 
     data_to_send = [float(x) for x in msg.decode(FORMAT).split(",")]
 
-    # send received data to the cloud
-    cloud_server.send(msg)
+    # do an initial check if the values are
+    # within a reasonable range
+    time = data_to_send[1]
+    print("time is")
+    print(time)
+    lux = data_to_send[0]
+    print("lux is")
+    print(lux)
+    if time < 0 or time > 24 or lux < 0 or lux > 20000:
+        print("änomalous!")
+        decision = "anomalous"
 
-    # print information: sent data to SVM: {data}
-    print(f"{Colours.BOLD}{Colours.YELLOW}✦{Colours.ENDC}"
-          f"{Colours.ENDC} Sent data to SVM:"
-          f"{Colours.BOLD}{Colours.YELLOW}"
-          f" {(data_to_send[0])},{(data_to_send[1])}{Colours.ENDC}")
+    # if initial checks are passed, send the data to the cloud
+    if decision != "anomalous":
+        print("good")
+        # send received data to the cloud
+        cloud_server.send(msg)
 
-    # receive the decision if the data is malicious
-    decision = cloud_server.recv(SIZE).decode(FORMAT)
-    # print information about the decision,
-    # decision: {decision}
-    if decision == "valid":
-        print(f"{Colours.BOLD}{Colours.GREEN}✦{Colours.ENDC}"
-              f"{Colours.ENDC} Returned decision:"
-              f"{Colours.BOLD}{Colours.GREEN} {decision}{Colours.ENDC}\n ")
-    else:
-        print(f"{Colours.BOLD}{Colours.RED}✦{Colours.ENDC}"
-              f"{Colours.ENDC} Returned decision:"
-              f"{Colours.BOLD}{Colours.RED} {decision}{Colours.ENDC}\n ")
+        # print information: sent data to SVM: {data}
+        print(f"\n{Colours.BOLD}{Colours.YELLOW}✦{Colours.ENDC}"
+              f"{Colours.ENDC} Sent data to SVM:"
+              f"{Colours.BOLD}{Colours.YELLOW}"
+              f" {(data_to_send[0])},{(data_to_send[1])}{Colours.ENDC}")
+
+        # receive the decision if the data is malicious
+        decision = cloud_server.recv(SIZE).decode(FORMAT)
+        # print information about the decision,
+        # decision: {decision}
+        if decision == "valid":
+            print(f"{Colours.BOLD}{Colours.GREEN}✦{Colours.ENDC}"
+                  f"{Colours.ENDC} Returned decision:"
+                  f"{Colours.BOLD}{Colours.GREEN} {decision}{Colours.ENDC}\n ")
+        else:
+            print(f"{Colours.BOLD}{Colours.RED}✦{Colours.ENDC}"
+                  f"{Colours.ENDC} Returned decision:"
+                  f"{Colours.BOLD}{Colours.RED} {decision}{Colours.ENDC}\n ")
     return decision
+# ------------------------------------------------------------------------------ #
 
 
 # Program entry point

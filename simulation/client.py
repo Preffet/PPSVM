@@ -6,9 +6,11 @@ import sys
 
 # Public variables
 # IP address used for client-server connection
+from datetime import datetime
+
 IP = socket.gethostbyname('localhost')
 # port used for client-server connection
-PORT = 1223
+PORT = 1228
 # full address
 ADDR = (IP, PORT)
 # message size
@@ -65,9 +67,27 @@ def main():
         try:
             # sleep for a bit
             time.sleep(10)
-            # get the path to the file with the valid data
-            path_to_data = os.path.dirname(os.path.dirname(__file__))
-            path_to_data = path_to_data + "/datasets/valid.csv"
+            # get the path to the current directory
+            dir_path = os.path.dirname(os.path.dirname(__file__))
+
+            # check time & pick a valid dataset
+            current_hour = 23#datetime.now().hour
+
+            if (6 > current_hour >= 0) or (21 <= current_hour < 24):
+                print("night")
+                # get the dataset with valid night data
+                path_to_data = dir_path + "/datasets/simulation_nodes/valid/night.csv"
+
+            elif 6 <= current_hour < 13:
+                print("day1")
+                # get the dataset with valid data for the first half of the day
+                path_to_data = dir_path + "/datasets/simulation_nodes/valid/day1.csv"
+
+            else:
+                print("day2")
+                # get the dataset with valid data for the second half of the day
+                path_to_data = dir_path + "/datasets/simulation_nodes/valid/day2.csv"
+
             # Read a random line from the dataset containing valid sensor readings
             with open(path_to_data) as f:
                 lines = f.readlines()
@@ -83,7 +103,7 @@ def main():
             if msg == "blocked":
                 # print the data the server received
                 # and that the node got blocked
-                print(f"{Colours.BOLD}{Colours.RED}✦{Colours.ENDC}"
+                print(f"\n{Colours.BOLD}{Colours.RED}✦{Colours.ENDC}"
                       f" Blocked by the server for sending"
                       f"{Colours.BOLD}{Colours.RED} "
                       f"malicious data{Colours.ENDC}\n")
@@ -91,7 +111,7 @@ def main():
                 connected = False
             else:
                 # print the data the server received
-                print(f"{Colours.BOLD}{Colours.YELLOW}✦{Colours.ENDC}"
+                print(f"{Colours.BOLD}{Colours.YELLOW}\n✦{Colours.ENDC}"
                       f" Decision received from the server:"
                       f" {Colours.BOLD}{Colours.YELLOW}{msg}{Colours.ENDC}\n")
 

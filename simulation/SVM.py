@@ -1,22 +1,21 @@
 # Data processing
+from datetime import datetime
+import pickle as pkl
 import numpy as np
 from numpy import where
 import pandas as pd
 # Model and performance
 from sklearn import svm
+from sklearn.svm import SVC
 from sklearn.preprocessing import MinMaxScaler
 # networking
 import socket
 # multithreading
 import threading
-
-
-# ANSI escape codes to print coloured/bold text
-from sklearn.svm import SVC
-
+# dp data privatisation
 from Laplace_dataset_privatiser import DataConverter, LaplacePrivacyPreserver
 
-
+# ANSI escape codes to print coloured/bold text
 class colours:
     ENDC = '\033[0m'
     CYAN = '\033[96m'
@@ -138,19 +137,54 @@ def get_svm_parameters():
 
     # return the SVM choice and epsilon values
     return svm_type, epsilon1, epsilon2
+# ------------------------------------------------------------------------------ #
 
 
-# function to privatise the dataset and get the training data
+# Function to choose & load the correct training
+# datasets depending on the system time
+def choose_training_dataset():
+    # Get the current hour, atm it is set to 5 for testing purposes, but
+    # for real time testing, change to datetime.now() and then
+    # go to client.py file and change the current_hour variable to
+    # datetime.now() too
+    current_hour = 23 #datetime.now().hour
+    df2 = pd.DataFrame()
+    # night dataset
+    if (6 > current_hour >= 0) or (21 <= current_hour < 24):
+        print("night")
+        df1 = pd.read_csv('../datasets/training/night.csv',
+                         header=0, sep=',')
+
+    # first half of the day
+    elif 6 <= current_hour < 13:
+        print("day1")
+        df1 = pd.read_csv('../datasets/training/day1_0.csv',
+                         header=0, sep=',')
+        df2 = pd.read_csv('../datasets/training/day1_1.csv',
+                         header=0, sep=',')
+    # second half of the day
+    else:
+        print("day3")
+        df1 = pd.read_csv('../datasets/training/day2_0.csv',
+                         header=0, sep=',')
+        df2 = pd.read_csv('../datasets/training/day2_1.csv',
+                         header=0, sep=',')
+    # return the required dataframes
+    return df1, df2
+
+
+# function to privatise the dataset
+# by adding laplace noise
 def privatised_training_dataset(eps):
     # import the dataset (with the headers)
-    df = pd.read_csv('../datasets/all_data_including_anomalous.csv',
-                     header=0, sep=',')
+    df = pd.read_csv('../datasets/all_data/all_data_including_anomalous.csv',
+                         header=0, sep=',')
 
     # define the scaler
     scaler = MinMaxScaler()
 
     # get X and y values from the dataset
-    X = df.loc[:, ['Float time value', 'Lux']]
+    X = df.loc[:, ['Lux', 'Float time value']]
     y = df['Label']
 
     # convert to numpy array
@@ -166,129 +200,205 @@ def privatised_training_dataset(eps):
     # get data sensitivity value
     input_sensitivity = data_privatiser.get_data_sensitivity_values(data_input)
     privatised_data = data_privatiser.privatise_data(
-        data_input,
-        sensitivity_values_list=input_sensitivity)
+            data_input,
+            sensitivity_values_list=input_sensitivity)
     # normalise the data
-    privatised_data = scaler.fit_transform(pd.DataFrame(privatised_data, columns=['Float time value', 'Lux']))
-    privatised_data = pd.DataFrame(privatised_data, columns=['Float time value', 'Lux'])
+    privatised_data = scaler.fit_transform(pd.DataFrame(privatised_data, columns=['Lux', 'Float time value']))
+    privatised_data = pd.DataFrame(privatised_data, columns=['Lux', 'Float time value'])
     # could test noisy labels too, but that is future work
     privatised_y_vals = pd.DataFrame(target_values, columns=['Label'])
     # return the privatised dataset and scaler
     return privatised_data, privatised_y_vals, scaler
 
+    # ------------------------------------------------------------------------------ #
 
-# function get the training data from a not privatised dataset
-def non_privatised_training_dataset():
+
+# function get the training data from the not privatised dataset
+def non_privatised_training_dataset(df, name):
     # define the scaler
     scaler = MinMaxScaler()
-    # import training data, specify that it has a header
-    df = pd.read_csv("../datasets/all_data_including_anomalous.csv", header=0)
     # get X and y values from the dataset
-    X = df.loc[:, ['Float time value', 'Lux']]
+    X = df.loc[:, ['Lux', 'Float time value']]
     y = df['Label']
     # convert to numpy array
-    #X = X.values
-    #y = y.values
+    # X = X.values
+    # y = y.values
     # normalise the training data and convert it back to a pd dataframe
     X_train = scaler.fit_transform(X)
-    X_train = pd.DataFrame(X_train, columns=['Float time value', 'Lux'])
-    # return training X,y values and the scaler
-    return X_train, y, scaler
+    X_train = pd.DataFrame(X_train, columns=['Lux', 'Float time value'])
+    # save the scaler
+    import pickle as pkl
+    with open(f"detection_system_files/scalers/{name}scaler.pkl", "wb") as outfile:
+        pkl.dump(scaler, outfile)
+
+    # return training X,y values
+    return X_train, y
+    # ------------------------------------------------------------------------------ #
 
 
 # function to prepare the received data for predictions
-def prepare_received_data(msg, scaler):
+def prepare_received_data(msg, name):
+    with open(f"detection_system_files/scalers/{name}scaler.pkl", "rb") as infile:
+        scaler = pkl.load(infile)
     decoded_received_data = [float(x) for x in msg.split(",")]
+    print("decode data:")
+    print(decoded_received_data)
 
     # Print the received message
     print(f"\n{colours.BOLD}{colours.BLUE}⫸{colours.ENDC}"
-          f" Data received: {colours.BOLD}{colours.BLUE}"
-          f"{decoded_received_data[0]},{decoded_received_data[1]}{colours.ENDC}", end='')
+              f" Data received: {colours.BOLD}{colours.BLUE}"
+              f"{decoded_received_data[0]},{decoded_received_data[1]}{colours.ENDC}", end='')
 
     # convert the data to a dataframe
-    decoded_received_data = pd.DataFrame([decoded_received_data], columns=['Float time value', 'Lux'])
+    print("dataframe")
+    decoded_received_data = pd.DataFrame([decoded_received_data], columns=['Lux','Float time value'])
+    print(decoded_received_data)
     # scale it
+
     decoded_received_data = scaler.transform(decoded_received_data)
+    print("after scaling")
+    print(decoded_received_data)
 
     # convert to df again
-    data_to_be_predicted = pd.DataFrame(decoded_received_data, columns=['Float time value', 'Lux'])
+    data_to_be_predicted = pd.DataFrame(decoded_received_data, columns=['Lux','Float time value'])
+    print("df again")
+    print(data_to_be_predicted)
+    # return pd dataframe containing the data to be predicted
     return data_to_be_predicted
+    # ------------------------------------------------------------------------------ #
 
 
-# function where the anomaly detection is
-# done using the chosen SVM type and epsilon values
+# helper function to filter out
+# outlier values after making a prediction
+# and return the decision/s
+def filter_outlier_values(prediction, data_to_be_predicted):
+    # filter outlier indexes
+    outlier_index = where(prediction == 0)
+    # filter outlier values
+    outlier_values = data_to_be_predicted.iloc[outlier_index]
+    # determine if the received data is anomalous
+    print("test")
+    if not outlier_values.size == 0:
+        decision = "anomalous"
+        # print that the received data is anomalous
+        # decision: anomalous
+        print(f"\n{colours.BOLD}{colours.RED}⫸{colours.ENDC}"
+              f" Decision: {colours.BOLD}{colours.RED}"
+              f"anomalous{colours.ENDC}\n")
+    else:
+        decision = "valid"
+        # print that the received data is valid
+        # decision: valid
+        print(f"\n{colours.BOLD}{colours.GREEN}⫸{colours.ENDC}"
+              f" Decision: {colours.BOLD}{colours.GREEN}"
+              f"valid{colours.ENDC}\n")
+    return decision
+    # ------------------------------------------------------------------------------ #
+
+
+# multithreaded function where the anomaly detection is
+# done using the chosen SVM type and epsilon values.
+# The dataset is chosen depending on a static value, but to simulate
+# a real world scenario, it can be chosen based on real system time
+# (see choose_training_dataset() function for instructions)
 def anomaly_detection(conn, addr, parameters):
+    # get model training datasets
+    df1, df2 = choose_training_dataset()[0], choose_training_dataset()[1]
 
-    # if the user choose to use not privatised dataset
+    # 1. classifier specification
+    # if the user choose to use a not privatised dataset
     if parameters[0] == 1 or parameters[0] == 3:
-        # retrieve x,y train values and scaler
-        returned_data_info = non_privatised_training_dataset()
-        X_train = returned_data_info[0]
-        y = returned_data_info[1]
-        scaler = returned_data_info[2]
+        # retrieve x,y train values and scaler for the first classifier
+        returned_data_info = non_privatised_training_dataset(df1, "df1")
+        X_train_1 = returned_data_info[0]
+        y_1 = returned_data_info[1]
+        print("ll")
+        import pickle as pkl
+        with open(f"detection_system_files/scalers/df1scaler.pkl", "rb") as infile:
+            scaler_1 = pkl.load(infile)
+
+        # retrieve x,y train values and scaler for the second classifier
+        if not df2.empty:
+            print( "not empty")
+            returned_data_info = non_privatised_training_dataset(df2, "df2")
+            X_train_2 = returned_data_info[0]
+            y_2 = returned_data_info[1]
+            print("test")
+            with open(f"detection_system_files/scalers/df2scaler.pkl", "rb") as infile:
+                scaler_2 = pkl.load(infile)
+            print("tes2")
 
     # if the user chose to use privatised dataset
     if parameters[0] == 2 or parameters[0] == 4:
-        # get the privatised X_train and y values and scaler
+        print("testing")
+        # get the privatised X_train and y
+        # values and scaler for the 1st classifier
         dataset_info = privatised_training_dataset(parameters[1])
-        X_train = dataset_info[0]
-        y = dataset_info[1]
-        scaler = dataset_info[2]
+        X_train_1 = dataset_info[0]
+        y_1 = dataset_info[1]
+        scaler_1 = dataset_info[2]
+        if not df2.empty:
+            # get the privatised X_train and y values and scaler
+            # or the 2nd classifier
+            dataset_info = privatised_training_dataset(parameters[1])
+            X_train_2 = dataset_info[0]
+            y_2 = dataset_info[1]
+            print("tes2j")
+            scaler_2 = dataset_info[2]
+            print("tes2k")
 
     # model specification
     # if the user chose to use
     # non-privacy preserving SVM
     if parameters[0] == 1 or parameters[0] == 2:
-        # rbf clasifier
-        model = svm.SVC(kernel='rbf', C=100.0)
-        # linear clasifier
-        # model = svm.SVC(kernel='linear', C=1.0)
-        # fit the training data
-        model.fit(X_train, np.ravel(y))
+        # linear svm
+        model_1 = svm.SVC(kernel='linear', C=100.0)
+        # fit the training data to the 1st classifier
+        model_1.fit(X_train_1, np.ravel(y_1))
+        # fit the training data to the 2nd classifier
+        if not df2.empty:
+            # linear svm
+            model_2 = svm.SVC(kernel='linear', C=100.0)
+            # fit the training data for the 2nd classifier
+            model_2.fit(X_train_2, np.ravel(y_2))
 
 
-
-
-    # receive the data from the server
+    # receive a message, make a prediction
+    # send back results to the server
+    # 1. receive the message
+    print("bef receiving")
     msg = conn.recv(SIZE).decode(FORMAT)
+    print("received")
+    print("mesage len")
+    print(len(msg))
+    print("message")
+    print(msg)
     if not (len(msg) <= 0):
-        # prepare data for predictions
-        data_to_be_predicted = prepare_received_data(msg, scaler)
+        # 2. make predictions
+        # prepare data for the 1st prediction
+        data_to_be_predicted_1 = prepare_received_data(msg, "df1")
         print("data to be pred")
-        print(data_to_be_predicted)
-        print("unscaled data")
-        print(scaler.inverse_transform(data_to_be_predicted))
-
+        print(data_to_be_predicted_1)
         # make the prediction
-        prediction = model.predict(data_to_be_predicted)
-        print("prediction")
-        print(prediction)
+        prediction_1 = model_1.predict(data_to_be_predicted_1)
+        print("pred")
+        print(prediction_1)
+        # get the decision
+        decision = filter_outlier_values(prediction_1, data_to_be_predicted_1)
+        # if not anomalous, make the second prediction
+        if decision != "anomalous" and not df2.empty:
+            # prepare data for the 2nd prediction
+            data_to_be_predicted_2 = prepare_received_data(msg,"df2")
+            # make the prediction
+            prediction_2 = model_2.predict(data_to_be_predicted_2)
+            # get the decision
+            decision = filter_outlier_values(prediction_2, data_to_be_predicted_2)
 
-
-        # filter outlier indexes
-        outlier_index = where(prediction == 0)
-        # filter outlier values
-        outlier_values = data_to_be_predicted.iloc[outlier_index]
-        # determine if the received data is anomalous
-        if not outlier_values.size == 0:
-            decision = "anomalous"
-            # print that the received data is anomalous
-            # decision: anomalous
-            print(f"\n{colours.BOLD}{colours.RED}⫸{colours.ENDC}"
-                  f" Decision: {colours.BOLD}{colours.RED}"
-                  f"anomalous{colours.ENDC}\n")
-        else:
-            decision = "valid"
-            # print that the received data is valid
-            # decision: valid
-            print(f"\n{colours.BOLD}{colours.GREEN}⫸{colours.ENDC}"
-                  f" Decision: {colours.BOLD}{colours.GREEN}"
-                  f"valid{colours.ENDC}\n")
-
+        # 3. send back the prediction to the router (server)
         conn.send(decision.encode(FORMAT))
     else:
         return
-
+# ------------------------------------------------------------------------------ #
 
 
 # Program Entry Point
