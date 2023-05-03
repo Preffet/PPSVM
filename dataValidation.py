@@ -47,7 +47,7 @@ def validate_date(val):
 def main():
     # open the file which contains the dataset for reading
     df = pd.read_csv(
-            "datasets/collected_light_data.csv",
+        "datasets/all_data/collected_light_data.csv",
             sep=",",
             header=0)
     # convert values to strings
