@@ -1,16 +1,12 @@
-import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
-from sklearn import model_selection, svm, metrics
-from sklearn.linear_model import SGDClassifier
-from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn import model_selection
+from sklearn.metrics import accuracy_score
 from sklearn.model_selection import cross_validate, GridSearchCV
 from sklearn.preprocessing import MinMaxScaler
 from warnings import simplefilter
-from sklearn.svm import LinearSVC, SVC
+from sklearn.svm import SVC
 
 from Laplace_dataset_privatiser import DataConverter, LaplacePrivacyPreserver
-from abstract_data_privatiser import ABCPrivacyPreserver
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import train_test_split
 simplefilter("ignore", category=ConvergenceWarning)
@@ -30,7 +26,7 @@ class colours:
 # Program Entry Point
 def main():
     # import the dataset (with the headers)
-    df = pd.read_csv('datasets/all_data_including_anomalous.csv', header=0, sep=',')
+    df = pd.read_csv('./datasets/training/day1_0.csv', header=0, sep=',')
 
     # define the scaler
     scaler = MinMaxScaler()
@@ -57,7 +53,7 @@ def main():
 
     # define the model, c=150 was the best
     # parameter value found after doing parameter tuning
-    clf = SVC(kernel="rbf",C=400)
+    clf = SVC(kernel="rbf",C=500)
     # define the parameter values for testing classic svm
     param_grid = {'C': [0.001, 0.1, 1, 5, 10, 25, 50, 100, 150, 200, 300, 400, 500]}
     # fit the data
@@ -109,7 +105,7 @@ def main():
     # define test epsilon values
     epsilon = [5.0, 4.0, 3.0, 1.0, 0.2, 0.1, 0.01]
     # define classifier and k-fold values for the tests with privatised data
-    clf2 = SVC(kernel="rbf", C=400)
+    clf2 = SVC(kernel="rbf", C=500)
     kfold2 = model_selection.KFold(n_splits=10, shuffle=True)
     print(f"{colours.BOLD}{colours.BLUE}\nPrivatised Dataset SVM:{colours.ENDC}")
     # test each epsilon value using cross validation
@@ -146,7 +142,6 @@ def main():
               f"data to predict unseen clean data"
               f"{colours.BOLD}{colours.CYAN} {(accuracy_score(y_test, y_train_pred2))}"
               f"\n{colours.ENDC}")
-
 
 
 # Program entry point
