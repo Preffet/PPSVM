@@ -11,7 +11,7 @@ red = ['#F90627']
 df = pd.read_csv('./datasets/all_data/all_data_including_anomalous.csv', header=0, sep=',')
 all_data = df.loc[:, ['Date', 'Float time value', 'Lux', 'Label']]
 # filter the valid and invalid data entries
-anomalous_data = all_data.loc[df['Label'] == 0]
+anomalous_data = all_data.loc[df['Label'] == -1]
 valid_data = all_data.loc[df['Label'] == 1]
 
 sns.set_palette(red, desat=0.4)
@@ -19,7 +19,7 @@ import matplotlib as mpl
 mpl.rcParams['lines.markersize'] = 6
 plot = sns.scatterplot(data=anomalous_data,
                 x="Float time value", y="Lux",
-                alpha  = 0.4,
+                alpha  = 0.45,
                 size=None,
                 style=None,
                 sizes=None,
