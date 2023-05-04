@@ -5,7 +5,7 @@ from sklearn.model_selection import cross_validate, GridSearchCV
 from sklearn.preprocessing import MinMaxScaler
 from warnings import simplefilter
 from sklearn.svm import SVC
-from Laplace_dataset_privatiser import DataConverter, LaplacePrivacyPreserver
+from privacy_preserving_svms.Laplace_dataset_privatiser import DataConverter, LaplacePrivacyPreserver
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import train_test_split
 simplefilter("ignore", category=ConvergenceWarning)
