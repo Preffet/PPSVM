@@ -40,8 +40,7 @@ EPSILON_VALUES = [5.0, 4.0, 1.0, 0.5, 0.25]
 
 
 # function to get the chosen SVM type as
-# well as privacy epsilon parameters
-# from the user
+# well as the privacy epsilon parameters from the user
 def get_svm_parameters():
     # small function to print all available epsilon options
     def print_options(epsilon_values):
@@ -143,32 +142,32 @@ def get_svm_parameters():
 # Function to choose & load the correct training
 # datasets depending on the system time
 def choose_training_dataset():
-    # Get the current hour, atm it is set to 5 for testing purposes, but
-    # for real time testing, change to datetime.now() and then
-    # go to client.py file and change the current_hour variable to
-    # datetime.now() too
+    # Get the current hour, at the moment, it is set to 23 for testing purposes, but
+    # for real time testing, change current_hour variable value to datetime.now()
+    # and then go to client.py file and change the current_hour variable to
+    # datetime.now() too. These both values must match.
     current_hour = 23 #datetime.now().hour
     df2 = pd.DataFrame()
-    # night dataset
+    # if it is night
     if (6 > current_hour >= 0) or (21 <= current_hour < 24):
         print("night")
-        df1 = pd.read_csv('../datasets/training/night.csv',
-                         header=0, sep=',')
+        df1 = pd.read_csv('../datasets/training/balanced/night.csv',
+                          header=0, sep=',')
 
-    # first half of the day
+    # if it is first half of the day
     elif 6 <= current_hour < 13:
         print("day1")
-        df1 = pd.read_csv('../datasets/training/day1_0.csv',
-                         header=0, sep=',')
-        df2 = pd.read_csv('../datasets/training/day1_1.csv',
-                         header=0, sep=',')
-    # second half of the day
+        df1 = pd.read_csv('../datasets/training/balanced/day1_0.csv',
+                          header=0, sep=',')
+        df2 = pd.read_csv('../datasets/training/balanced/day1_1.csv',
+                          header=0, sep=',')
+    # if it is second half of the day
     else:
         print("day3")
-        df1 = pd.read_csv('../datasets/training/day2_0.csv',
-                         header=0, sep=',')
-        df2 = pd.read_csv('../datasets/training/day2_1.csv',
-                         header=0, sep=',')
+        df1 = pd.read_csv('../datasets/training/balanced/day2_0.csv',
+                          header=0, sep=',')
+        df2 = pd.read_csv('../datasets/training/balanced/day2_1.csv',
+                          header=0, sep=',')
     # return the required dataframes
     return df1, df2
 
@@ -273,7 +272,7 @@ def prepare_received_data(msg, name):
 # and return the decision/s
 def filter_outlier_values(prediction, data_to_be_predicted):
     # filter outlier indexes
-    outlier_index = where(prediction == 0)
+    outlier_index = where(prediction == -1)
     # filter outlier values
     outlier_values = data_to_be_predicted.iloc[outlier_index]
     # determine if the received data is anomalous
@@ -319,7 +318,7 @@ def anomaly_detection(conn, addr, parameters):
 
         # retrieve x,y train values and scaler for the second classifier
         if not df2.empty:
-            print( "not empty")
+            print("not empty")
             returned_data_info = non_privatised_training_dataset(df2, "df2")
             X_train_2 = returned_data_info[0]
             y_2 = returned_data_info[1]

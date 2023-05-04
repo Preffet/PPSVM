@@ -49,6 +49,8 @@ def send_email(date, time, ip, data):
     file.close()
 
     port = 465  # For SSL
+    # not an actual gmail account password,
+    # just the app password to authenticate this application :)
     password = 'gcjdhpydrjstnibz'
     sender_email = 'a15764291@gmail.com'
 
