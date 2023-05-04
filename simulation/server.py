@@ -228,18 +228,13 @@ def handle_cloud(msg):
     # do an initial check if the values are
     # within a reasonable range
     time = data_to_send[1]
-    print("time is")
-    print(time)
     lux = data_to_send[0]
-    print("lux is")
-    print(lux)
+
     if time < 0 or time > 24 or lux < 0 or lux > 20000:
-        print("änomalous!")
         decision = "anomalous"
 
     # if initial checks are passed, send the data to the cloud
     if decision != "anomalous":
-        print("good")
         # send received data to the cloud
         cloud_server.send(msg)
 

@@ -274,7 +274,7 @@ def filter_outlier_values(prediction, data_to_be_predicted):
     # filter outlier values
     outlier_values = data_to_be_predicted.iloc[outlier_index]
     # determine if the received data is anomalous
-    print("test")
+
     if not outlier_values.size == 0:
         decision = "anomalous"
         # print that the received data is anomalous
@@ -309,25 +309,21 @@ def anomaly_detection(conn, addr, parameters):
         returned_data_info = non_privatised_training_dataset(df1, "df1")
         X_train_1 = returned_data_info[0]
         y_1 = returned_data_info[1]
-        print("ll")
+
         import pickle as pkl
         with open(f"detection_system_files/scalers/df1scaler.pkl", "rb") as infile:
             scaler_1 = pkl.load(infile)
 
         # retrieve x,y train values and scaler for the second classifier
         if not df2.empty:
-            print("not empty")
             returned_data_info = non_privatised_training_dataset(df2, "df2")
             X_train_2 = returned_data_info[0]
             y_2 = returned_data_info[1]
-            print("test")
             with open(f"detection_system_files/scalers/df2scaler.pkl", "rb") as infile:
                 scaler_2 = pkl.load(infile)
-            print("tes2")
 
     # if the user chose to use privatised dataset
     if parameters[0] == 2 or parameters[0] == 4:
-        print("testing")
         # get the privatised X_train and y
         # values and scaler for the 1st classifier
         dataset_info = privatised_training_dataset(parameters[1])
@@ -340,9 +336,7 @@ def anomaly_detection(conn, addr, parameters):
             dataset_info = privatised_training_dataset(parameters[1])
             X_train_2 = dataset_info[0]
             y_2 = dataset_info[1]
-            print("tes2j")
             scaler_2 = dataset_info[2]
-            print("tes2k")
 
     # model specification
     # if the user chose to use
@@ -363,13 +357,8 @@ def anomaly_detection(conn, addr, parameters):
     # receive a message, make a prediction
     # send back results to the server
     # 1. receive the message
-    print("bef receiving")
+
     msg = conn.recv(SIZE).decode(FORMAT)
-    print("received")
-    print("mesage len")
-    print(len(msg))
-    print("message")
-    print(msg)
     if not (len(msg) <= 0):
         # 2. make predictions
         # prepare data for the 1st prediction

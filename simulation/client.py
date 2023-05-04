@@ -74,17 +74,14 @@ def main():
             current_hour = 23#datetime.now().hour
 
             if (6 > current_hour >= 0) or (21 <= current_hour < 24):
-                print("night")
                 # get the dataset with valid night data
                 path_to_data = dir_path + "/datasets/simulation_nodes/valid/night.csv"
 
             elif 6 <= current_hour < 13:
-                print("day1")
                 # get the dataset with valid data for the first half of the day
                 path_to_data = dir_path + "/datasets/simulation_nodes/valid/day1.csv"
 
             else:
-                print("day2")
                 # get the dataset with valid data for the second half of the day
                 path_to_data = dir_path + "/datasets/simulation_nodes/valid/day2.csv"
 
