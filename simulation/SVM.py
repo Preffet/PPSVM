@@ -1,19 +1,17 @@
 # Data processing
-from datetime import datetime
 import pickle as pkl
 import numpy as np
 from numpy import where
 import pandas as pd
 # Model and performance
 from sklearn import svm
-from sklearn.svm import SVC
 from sklearn.preprocessing import MinMaxScaler
 # networking
 import socket
 # multithreading
 import threading
 # dp data privatisation
-from Laplace_dataset_privatiser import DataConverter, LaplacePrivacyPreserver
+from privacy_preserving_svms.Laplace_dataset_privatiser import DataConverter, LaplacePrivacyPreserver
 
 # ANSI escape codes to print coloured/bold text
 class colours:
