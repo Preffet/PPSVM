@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn import model_selection
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import cross_validate, GridSearchCV
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from warnings import simplefilter
 from sklearn.svm import SVC
 from privacy_preserving_svms.Laplace_dataset_privatiser import DataConverter, LaplacePrivacyPreserver
@@ -12,7 +12,7 @@ simplefilter("ignore", category=ConvergenceWarning)
 
 
 # ANSI escape codes to print coloured/bold text
-class colours:
+class Colours:
     ENDC = '\033[0m'
     CYAN = '\033[96m'
     BOLD = '\033[1m'
@@ -24,10 +24,10 @@ class colours:
 # Program Entry Point
 def main():
     # import the dataset (with the headers)
-    df = pd.read_csv('./datasets/training/balanced/day1_1.csv', header=0, sep=',')
+    df = pd.read_csv('./datasets/training/balanced/day2_1.csv', header=0, sep=',')
 
     # define the scaler
-    scaler = MinMaxScaler()
+    scaler = StandardScaler()
 
     # get X and y values from the dataset
     X = df.loc[:, ['Float time value', 'Lux']]
@@ -77,17 +77,17 @@ def main():
         accuracy += accuracy_score(y_test, y_train_pred)
 
     # Print statistics
-    print(f"{colours.BOLD}{colours.BLUE}Non-Privatised Dataset SVM:{colours.ENDC}")
-    print(f"{colours.BOLD}{colours.GREEN}⫸"
-          f"{colours.ENDC}Average Cross Validation Accuracy"
-          f"{colours.BOLD}{colours.GREEN} {sum(results)/5}\n{colours.ENDC}", end='')
+    print(f"{Colours.BOLD}{Colours.BLUE}Non-Privatised Dataset SVM:{Colours.ENDC}")
+    print(f"{Colours.BOLD}{Colours.GREEN}⫸"
+          f"{Colours.ENDC}Average Cross Validation Accuracy"
+          f"{Colours.BOLD}{Colours.GREEN} {sum(results)/5}\n{Colours.ENDC}", end='')
 
-    print(f"{colours.BOLD}{colours.GREEN}⫸"
-          f"{colours.ENDC}Accuracy Predicting Unseen Data"
-          f"{colours.BOLD}{colours.GREEN} {accuracy/5}\n{colours.ENDC}")
+    print(f"{Colours.BOLD}{Colours.GREEN}⫸"
+          f"{Colours.ENDC}Accuracy Predicting Unseen Data"
+          f"{Colours.BOLD}{Colours.GREEN} {accuracy/5}\n{Colours.ENDC}")
 
     # parameter tuning using GridSearchCV for non privatised datasets
-    print(f"{colours.BOLD}{colours.BLUE}Parameter Tuning For Non-Privatised Dataset SVM:{colours.ENDC}")
+    print(f"{Colours.BOLD}{Colours.BLUE}Parameter Tuning For Non-Privatised Dataset SVM:{Colours.ENDC}")
     grid = GridSearchCV(clf, param_grid, refit=True, verbose=4, cv=10)
     grid.fit(X_train, y_train)
     print(grid.best_estimator_)
@@ -112,7 +112,7 @@ def main():
     # define classifier and k-fold values for the tests with privatised data
     clf2 = SVC(kernel="rbf", C=500)
     kfold2 = model_selection.KFold(n_splits=10, shuffle=True)
-    print(f"{colours.BOLD}{colours.BLUE}\nPrivatised Dataset SVM:{colours.ENDC}")
+    print(f"{Colours.BOLD}{Colours.BLUE}\nPrivatised Dataset SVM:{Colours.ENDC}")
     # test each epsilon value using cross validation
     for i in epsilon:
         results2 = []
@@ -144,18 +144,18 @@ def main():
         # print the statistics:
         # Epsilon x cross validation accuracy,
         # Accuracy using epsilon x to predict unseen clean data
-        print(f"{colours.BOLD}{colours.CYAN}⫸"
-              f"{colours.ENDC} Epsilon {colours.BOLD}{colours.YELLOW}{i}"
-              f"{colours.ENDC} Cross Validation Accuracy: "
-              f"{colours.BOLD}{colours.CYAN}"
-              f"{sum(results2)/5}{colours.ENDC}")
+        print(f"{Colours.BOLD}{Colours.CYAN}⫸"
+              f"{Colours.ENDC} Epsilon {Colours.BOLD}{Colours.YELLOW}{i}"
+              f"{Colours.ENDC} Cross Validation Accuracy: "
+              f"{Colours.BOLD}{Colours.CYAN}"
+              f"{sum(results2)/5}{Colours.ENDC}")
 
-        print(f"{colours.BOLD}{colours.CYAN}⫸"
-              f"{colours.ENDC}{colours.ENDC} Accuracy using Epsilon "
-              f"{colours.BOLD}{colours.YELLOW}{i}{colours.ENDC} "
+        print(f"{Colours.BOLD}{Colours.CYAN}⫸"
+              f"{Colours.ENDC}{Colours.ENDC} Accuracy using Epsilon "
+              f"{Colours.BOLD}{Colours.YELLOW}{i}{Colours.ENDC} "
               f"data to predict unseen clean data"
-              f"{colours.BOLD}{colours.CYAN} {accuracy2/5}"
-              f"\n{colours.ENDC}")
+              f"{Colours.BOLD}{Colours.CYAN} {accuracy2/5}"
+              f"\n{Colours.ENDC}")
 
 
 # Program entry point
