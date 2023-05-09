@@ -1,11 +1,20 @@
 import pandas as pd
 from datetime import datetime
 
+"""
+Simple script to check the initial dataset.
+Checks if there are any empty cells,
+if fields which should be numeric are numeric,
+if date is in the right format, and if
+lux and time values are within a reasonable range
+"""
+
 
 # ANSI escape codes to print coloured text
 class Colours:
     ENDC = '\033[0m'
     BLUE = '\033[94m'
+
 
 # function to locate empty and NaN columns in the dataset
 def check_for_empty_cells(data_frame):
@@ -15,6 +24,7 @@ def check_for_empty_cells(data_frame):
             for x in (0, 1))
 
     if not data_frame.loc[missing_rows, missing_cols].empty:
+        # print the columns with the located empty cells
         print("Columns with empty or NaN values found:")
         print(data_frame.loc[missing_rows, missing_cols])
         return 1
@@ -28,7 +38,7 @@ def validate_lux(val):
         # check if it is a numerical value
         float(val['Lux'])
         # check if it is >=0 and <=200 000
-        if not 0 <= float(val['Lux'])<=200000:
+        if not 0 <= float(val['Lux']) <= 200000:
                 invalid = True
                 print("\nInvalid Lux value found:")
                 print(val)
@@ -38,17 +48,25 @@ def validate_lux(val):
 
 
 # function to check if the
-# date values are in correct format
+# date values are in a correct format
 def validate_date(val):
     # check the data type
     try:
-        datetime.strptime(val['Date'],'%m/%d/%Y')
+        datetime.strptime(val['Date'], '%m/%d/%Y')
     except:
         print("Invalid date found:")
         print(val)
 
 
-# program entry point
+"""
+Program entry point. First read the data,
+then check for empty cells, if not found,
+check if numeric fields are actually numeric,
+after that, check their range. Finally,
+validate the date fields.
+"""
+
+
 def main():
     print(f"{Colours.BLUE}Running this script will provide information about any invalid data present in the dataset.")
     print(f"If this is the only message displayed, then all the data in the dataset is valid.{Colours.ENDC}")
@@ -104,5 +122,8 @@ def main():
         df.apply(lambda x: validate_lux(x), axis=1)
 
 
+"""
+Program entry point
+"""
 if __name__ == "__main__":
     main()
