@@ -34,6 +34,60 @@ class Colours:
 
 
 """"
+Function which contains grid
+search implemented from scratch to find
+the best lambda and h values using
+k fold cross validation
+"""
+
+
+def grid_search(data):
+    # small helper function to find the highest accuracy
+    def find_highest_accuracy(accuracies_list):
+        highest_accuracy = -1
+        highest_entry = None
+        for entry in accuracies_list:
+                if entry['accuracy'] > highest_accuracy:
+                    highest_accuracy = entry['accuracy']
+                    highest_entry = entry
+        # return the entry containing the highest accuracy
+        return highest_entry
+
+    # inform the user that it might take a while to complete
+    print(f"{Colours.CYAN}Starting grid search for optimal hyperparameters.\n{Colours.ENDC}"
+          "Please note that if you have chosen a large number"
+          " of lambda/h parameters or runs, the process may take"
+          " a significant amount of time to complete. :) ")
+    # define the epsilon
+    epsilon = 0.5
+    # number of runs
+    runs = 2
+    # number of bucket files
+    for j in range(0, runs):
+        path_to_folds_file = create_folds_file(data)
+        accuracies_list = []
+        for h in h_vals:
+                for l in lambda_vals:
+                    results_buckets = np.zeros(20)
+                    cv_list = []
+                    for i in range(0, 10):
+                        # get train and test data for the current fold
+                        training, testing = train_test_split(data, folds_path=path_to_folds_file, fold_number=i)
+                        # define the svm
+                        huber = obj_SVM.SVM(private=True, labda=l, h=h)
+                        huber.fit(data=training, epsilon_p=epsilon)
+                        accuracy = 1 - huber.evaluate(testing)
+                        cv_list.append(accuracy)
+                    accuracies_dict = {'accuracy': mean(cv_list), 'h': h, 'lambda': l}
+                    accuracies_list.append(accuracies_dict)
+
+        # print the best discovered parameters
+        print(f"Best discovered parameters during run {j+1}:\n"
+              f"{Colours.BLUE}"
+              f"{find_highest_accuracy(accuracies_list=accuracies_list)}"
+              f"{Colours.ENDC}")
+
+""""
 Evaluate the performance of the SVM when using
 different epsilon values.
 0 epsilon = the mechanism is perfectly private but completely
@@ -104,60 +158,6 @@ def privacy_accuracy_evaluation(data):
     last_index = len(epsilon_values)-1
     print(f"plain Huber svm accuracy {final_average[last_index]}")
 
-
-""""
-Function which contains grid
-search implemented from scratch to find
-the best lambda and h values using
-k fold cross validation
-"""
-
-
-def grid_search(data):
-    # small helper function to find the highest accuracy
-    def find_highest_accuracy(accuracies_list):
-        highest_accuracy = -1
-        highest_entry = None
-        for entry in accuracies_list:
-                if entry['accuracy'] > highest_accuracy:
-                    highest_accuracy = entry['accuracy']
-                    highest_entry = entry
-        # return the entry containing the highest accuracy
-        return highest_entry
-
-    # inform the user that it might take a while to complete
-    print(f"{Colours.CYAN}Starting grid search for optimal hyperparameters.\n{Colours.ENDC}"
-          "Please note that if you have chosen a large number"
-          " of lambda/h parameters or runs, the process may take"
-          " a significant amount of time to complete. :) ")
-    # define the epsilon
-    epsilon = 0.5
-    # number of runs
-    runs = 2
-    # number of bucket files
-    for j in range(0, runs):
-        path_to_folds_file = create_folds_file(data)
-        accuracies_list = []
-        for h in h_vals:
-                for l in lambda_vals:
-                    results_buckets = np.zeros(20)
-                    cv_list = []
-                    for i in range(0, 10):
-                        # get train and test data for the current fold
-                        training, testing = train_test_split(data, folds_path=path_to_folds_file, fold_number=i)
-                        # define the svm
-                        huber = obj_SVM.SVM(private=True, labda=l, h=h)
-                        huber.fit(data=training, epsilon_p=epsilon)
-                        accuracy = 1 - huber.evaluate(testing)
-                        cv_list.append(accuracy)
-                    accuracies_dict = {'accuracy': mean(cv_list), 'h': h, 'lambda': l}
-                    accuracies_list.append(accuracies_dict)
-
-        # print the best discovered parameters
-        print(f"Best discovered parameters during run {j+1}:\n"
-              f"{Colours.BLUE}"
-              f"{find_highest_accuracy(accuracies_list=accuracies_list)}"
-              f"{Colours.ENDC}")
 
 
 """"
