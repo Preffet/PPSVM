@@ -1,8 +1,11 @@
 import pandas as pd
 from numpy import mean
 import numpy as np
+from sklearn import preprocessing
+from sklearn.preprocessing import Normalizer
+
 from privacy_preserving_svms import objective_function_perturbation_SVM as obj_SVM
-from cross_validation_utilities import train_test_split, create_folds_file
+from helper_scripts import cross_validation_utilities as cv_utils
 
 """"
 Script which contains functions to find the 
@@ -64,7 +67,7 @@ def grid_search(data):
     runs = 2
     # number of bucket files
     for j in range(0, runs):
-        path_to_folds_file = create_folds_file(data)
+        path_to_folds_file = cv_utils.create_folds_file(data)
         accuracies_list = []
         for h in h_vals:
                 for l in lambda_vals:
@@ -72,7 +75,7 @@ def grid_search(data):
                     cv_list = []
                     for i in range(0, 10):
                         # get train and test data for the current fold
-                        training, testing = train_test_split(data, folds_path=path_to_folds_file, fold_number=i)
+                        training, testing = cv_utils.train_test_split(data, folds_path=path_to_folds_file, fold_number=i)
                         # define the svm
                         huber = obj_SVM.SVM(private=True, labda=l, h=h)
                         huber.fit(data=training, epsilon_p=epsilon)
@@ -111,7 +114,7 @@ def privacy_accuracy_evaluation(data):
     # accuracy of the plain svm at the last index
     run_avg = np.zeros(len(epsilon_values)+1)
     for run in range(0, runs):
-        folds_location = create_folds_file(data)
+        folds_location = cv_utils.create_folds_file(data)
         print(f"{Colours.BLUE}\nRUN NUMBER : {run}{Colours.ENDC} ")
         # store accuracies for each epsilon value
         # (accuracy at index 0 = accuracy running svm
@@ -124,8 +127,11 @@ def privacy_accuracy_evaluation(data):
         for k in range(0, 10):
             # iterate through each fold
             # and create the train/test data subsets
-            train, test = train_test_split(data, folds_path=folds_location, fold_number=k)
+            train, test = cv_utils.train_test_split(data, folds_path=folds_location, fold_number=k)
+
+
             print(f"{Colours.CYAN}\nFOLD NUMBER : {k}{Colours.ENDC}")
+
             epsilon_val_index = 0
             # check each epsilon value
             for epsilon_value in epsilon_values:
@@ -165,7 +171,7 @@ Program entry function
 """
 def main():
     # load the dataset
-    data = pd.read_csv('../datasets/training/balanced/day2_0.csv', header=0, sep=',')
+    data = pd.read_csv('../datasets/training/balanced/evening_0.csv', header=0, sep=',')
     # choose the function (grid search/privacy and accuracy trade-off evaluation)
     #grid_search(data)
     privacy_accuracy_evaluation(data)

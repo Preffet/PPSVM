@@ -54,11 +54,11 @@ def main():
 
     # normalise the data (X training and testing values)
     X_train = scaler.fit_transform(X_train)
-    X_test = scaler.fit_transform(X_test)
+    X_test = scaler.transform(X_test)
 
     # define the model, c=150 was the best
     # parameter value found after doing parameter tuning
-    clf = SVC(kernel="rbf", C=500)
+    clf = SVC(kernel="linear", C=500)
     # define the parameter values for testing classic svm
     param_grid = {'C': [0.001, 0.1, 1, 5, 10, 25, 50, 100, 150, 200, 300, 400, 500]}
     # fit the data
