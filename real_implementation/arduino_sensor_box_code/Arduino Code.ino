@@ -1,5 +1,3 @@
-
-
 #include <SPI.h>
 #include <SD.h>
 #include <LoRa.h>
@@ -10,7 +8,6 @@
 #include <DFRobot_SHT3x.h>
 
 LoRaModem modem;
-
 
 String appEui;
 String appKey;
@@ -51,11 +48,9 @@ float SenVTempC=0, SenVWM1=0, SenVWM2=0, ARead_A1=0, ARead_A2=0;
 float  Calib_Resistance = 1;
 float WM1_Resistance, WM2_Resistance, Acc_Lux, Amb_Lux,Bat_Read, Battery, Res_Check, Soil_Temp, Temp, Soil_T;
 
-
-
 short int i, j, Sample, WM1_CB, WM2_CB, WM_CB, counter = 0;
 
-float SupplyV = 3.3, Read_Delay;//, Read_Delay;
+float SupplyV = 3.3, Read_Delay;// Read_Delay;
 float WM1_R_Offset = 1815.66; // Read 2365.66 ohms in water, so deviation by 1815.66. (550 ohms for 0 CB)
 float WM2_R_Offset = 878.71; // Read 1428.71 ohms in water, so deviation by 1815.66. (550 ohms for 0 CB)
 
@@ -68,14 +63,11 @@ const short int short_CB=240, open_CB=255 ;
 
 float Amb_Temp_C, Amb_Temp_F, Amb_Humid, Acc_Temp_C, Acc_Temp_F, Acc_Humid;
 
-
 short int connected, err;
 
 short int nitro = 0;
 short int phos = 0;
 short int pot = 0;
-
-
 
 float nitro_avg;
 float phos_avg; 
@@ -174,8 +166,11 @@ void loop() {
   delay(100);  
   Soil_Temp = Soil_Temp_Sensor(3);      
   digitalWrite(Temp_Pos, LOW);
-    
-  digitalWrite(Moist1_Pos, HIGH); // This function could be done with being a function for one sensor, not both together, would save power, one being on whilst not being read.
+  // This function could be done with
+  // being a function for one sensor,
+  // not both together, would save power,
+  // one being on whilst not being read.
+  digitalWrite(Moist1_Pos, HIGH);
   digitalWrite(Moist2_Pos, HIGH);
   delay(100);
   Soil_Moist_Sensors(3, Soil_Temp);   
@@ -265,12 +260,13 @@ void loop() {
 
 double Soil_Temp_Sensor(int samples){
   Soil_Temp = 0;
-  
-  for (i=0; i<samples; i++)   //the samples initialized above, controls the number of read successive read loops that is averaged. 
+  //the samples initialized above, controls
+  // the number of read successive read loops that is averaged.
+  for (i=0; i<samples; i++)
   {
     
   delay(0.1); //wait 90 micro seconds and take sensor read was 0.09
-  Soil_Temp += analogRead(Temp_Read);   // read the temp sensor analog pin
+  Soil_Temp += analogRead(Temp_Read); // read the temp sensor analog pin
   }
 
   SenVTempC=((Soil_Temp/4096)*SupplyV)/ samples;
@@ -295,33 +291,30 @@ void Soil_Moist_Sensors(int samples, double Temp){
   SenVTempC=0;
 
   Read_Delay = Moist_Read_Delay/samples;  
-  
-  for (i=0; i<samples; i++)   //the samples initialized above, controls the number of read successive read loops that is averaged. 
+   //the samples initialized above,
+   // controls the number of read successive
+   // read loops that is averaged.
+  for (i=0; i<samples; i++)
   {  
   delay(Read_Delay);  
   ARead_A1+=analogRead(Moist1_Read);     
   }
-   
-  for (i=0; i<samples; i++)   //the samples initialized above, controls the number of read successive read loops that is averaged. 
-  {  
-
+  //the samples initialized above, controls the
+  // number of read successive read loops that is averaged.
+  for (i=0; i<samples; i++)
+  {
   delay(Read_Delay);  
-  ARead_A2+=analogRead(Moist2_Read);    
-    
+  ARead_A2+=analogRead(Moist2_Read);
   }
 
-    
   SenVWM1=((ARead_A1/4096)*SupplyV) / (samples); //get the average of the readings in the first direction and convert to volts  
-  WM1_Resistance = (Rx*(SupplyV-SenVWM1)/SenVWM1) - WM1_R_Offset; //do the voltage divider math, using the Rx variable representing the known resistor  
-  
+  WM1_Resistance = (Rx*(SupplyV-SenVWM1)/SenVWM1) - WM1_R_Offset; //do the voltage divider math, using the Rx variable representing the known resistor
 
   SenVWM2=((ARead_A2/4096)*SupplyV) / (samples); //get the average of the readings in the first direction and convert to volts  
   WM2_Resistance = (Rx*(SupplyV-SenVWM2)/SenVWM2) - WM2_R_Offset; //do the voltage divider math, using the Rx variable representing the known resistor  
- 
 
   WM1_CB = WM_CB_Value(WM1_Resistance);
   WM2_CB = WM_CB_Value(WM2_Resistance);
-
 
   ARead_A1 = 0;   
   SenVWM1=0;
@@ -504,8 +497,6 @@ void pH_Sensor(const byte pH_request, int samples){
     ph_acc += pH;
 
    }
-
-    
     }
 
   
