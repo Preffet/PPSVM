@@ -2,7 +2,7 @@ import pandas as pd
 from numpy import mean
 import numpy as np
 from sklearn import preprocessing
-from sklearn.preprocessing import Normalizer
+from sklearn.preprocessing import Normalizer, StandardScaler, MinMaxScaler
 
 from privacy_preserving_svms import objective_function_perturbation_SVM as obj_SVM
 from helper_scripts import cross_validation_utilities as cv_utils
@@ -20,11 +20,17 @@ Call different test functions in the main function
 # define the range of values for h to test
 # in huber loss function it controls the
 # transition point between the squared loss and the linear loss
-h_vals = [0.001, 0.01, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100, 500, 1000, 5000,7000]
+# for plain svm c values that were tested were 0.001,0.01,0.1,1,10,100,1000
+
+# since h=1/2c, equivalent h vals were tested:
+# 500, 50, 5, 0.5, 0.05, 0.005, 0.0005
+h_vals = [500, 50, 5, 0.5, 0.05, 0.005, 0.0005]
 
 # define the range of values for lambda to test,
 # used for regularization
+# [0.002, 0.02, 0.2, 2.0, 20.0, 200.0, 2000.0]
 lambda_vals = [1/h for h in h_vals]
+
 
 
 # ANSI escape codes to print coloured/bold text
@@ -60,11 +66,11 @@ def grid_search(data):
     print(f"{Colours.CYAN}Starting grid search for optimal hyperparameters.\n{Colours.ENDC}"
           "Please note that if you have chosen a large number"
           " of lambda/h parameters or runs, the process may take"
-          " a significant amount of time to complete. :) ")
+          " a significant amount of time to complete (>1-2minutes). :) ")
     # define the epsilon
     epsilon = 0.5
     # number of runs
-    runs = 2
+    runs = 5
     # number of bucket files
     for j in range(0, runs):
         path_to_folds_file = cv_utils.create_folds_file(data)
@@ -76,6 +82,11 @@ def grid_search(data):
                     for i in range(0, 10):
                         # get train and test data for the current fold
                         training, testing = cv_utils.train_test_split(data, folds_path=path_to_folds_file, fold_number=i)
+
+                        scaler = StandardScaler()
+                        training[['Lux', 'Float time value']] = scaler.fit_transform(training[['Lux', 'Float time value']])
+                        testing[['Lux', 'Float time value']] = scaler.transform(testing[['Lux', 'Float time value']])
+
                         # define the svm
                         huber = obj_SVM.SVM(private=True, labda=l, h=h)
                         huber.fit(data=training, epsilon_p=epsilon)
@@ -128,8 +139,9 @@ def privacy_accuracy_evaluation(data):
             # iterate through each fold
             # and create the train/test data subsets
             train, test = cv_utils.train_test_split(data, folds_path=folds_location, fold_number=k)
-
-
+            scaler = StandardScaler()
+            train[['Lux', 'Float time value']] = scaler.fit_transform(train[['Lux', 'Float time value']])
+            test[['Lux', 'Float time value']] = scaler.transform(test[['Lux', 'Float time value']])
             print(f"{Colours.CYAN}\nFOLD NUMBER : {k}{Colours.ENDC}")
 
             epsilon_val_index = 0
@@ -171,10 +183,12 @@ Program entry function
 """
 def main():
     # load the dataset
-    data = pd.read_csv('../datasets/training/balanced/evening_0.csv', header=0, sep=',')
+
+    data = pd.read_csv('../datasets/training/balanced/afternoon_0.csv', header=0, sep=',')
     # choose the function (grid search/privacy and accuracy trade-off evaluation)
     #grid_search(data)
-    privacy_accuracy_evaluation(data)
+    grid_search(data)
+    #privacy_accuracy_evaluation(data)
 
 
 """"

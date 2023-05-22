@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 from sklearn import model_selection
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import cross_validate, GridSearchCV
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, Normalizer
 from warnings import simplefilter
 from sklearn.svm import SVC
 from privacy_preserving_svms.Laplace_dataset_privatiser import DataConverter, LaplacePrivacyPreserver
@@ -31,10 +31,8 @@ class Colours:
 # Program Entry Point
 def main():
     # import the dataset (with the headers)
-    df = pd.read_csv('./datasets/training/balanced/day2_1.csv', header=0, sep=',')
+    df = pd.read_csv('./datasets/training/balanced/night.csv', header=0, sep=',')
 
-    # define the scaler
-    scaler = StandardScaler()
 
     # get X and y values from the dataset
     X = df.loc[:, ['Lux','Float time value']]
@@ -44,15 +42,14 @@ def main():
     X = X.values
     y = y.values
 
+    # define the scaler
+    # (Scikit-Learn Standard Scaler)
+    scaler = StandardScaler()
     # split the data into train and test datasets
     # 70% for training, 30% for predictions
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 
-    # make a copy of X_test and X_train
-    X_test_copy = X_test
-    X_train_copy = X_train
-
-    # normalise the data (X training and testing values)
+    # normalise the data (training and testing feature values (X))
     X_train = scaler.fit_transform(X_train)
     X_test = scaler.transform(X_test)
 
@@ -60,7 +57,7 @@ def main():
     # parameter value found after doing parameter tuning
     clf = SVC(kernel="linear", C=500)
     # define the parameter values for testing classic svm
-    param_grid = {'C': [0.001, 0.1, 1, 5, 10, 25, 50, 100, 150, 200, 300, 400, 500]}
+    param_grid = {'C': [0.001, 0.01, 0.1, 1, 10, 100, 1000]}
     # fit the data
     clf.fit(X_train, y_train)
     results = []
@@ -97,6 +94,7 @@ def main():
     print(f"{Colours.BOLD}{Colours.BLUE}Parameter Tuning For Non-Privatised Dataset SVM:{Colours.ENDC}")
     grid = GridSearchCV(clf, param_grid, refit=True, verbose=4, cv=10)
     grid.fit(X_train, y_train)
+    print("best estimator")
     print(grid.best_estimator_)
     # optionally, print the confusion matrix
     #grid_predictions = grid.predict(X_test)
@@ -115,8 +113,7 @@ def main():
     inputSensitivity = data_privatiser.get_data_sensitivity_values(dataInput)
 
     # define test epsilon values
-    epsilon = [0.001]
-    #  epsilon = [5.0, 4.0, 3.0, 1.0, 0.2, 0.1, 0.01]
+    epsilon = [5.0, 4.0, 3.0, 1.0, 0.2, 0.1, 0.01]
     # define classifier and k-fold values for the tests with privatised data
     clf2 = SVC(kernel="linear", C=500)
     kfold2 = model_selection.KFold(n_splits=10, shuffle=True)
@@ -124,9 +121,10 @@ def main():
     # test each epsilon value using cross validation
 
     # plot
+    '''
     fig, ax = plt.subplots()
 
-
+    '''
 
 
     for i in epsilon:
@@ -165,7 +163,6 @@ def main():
         # replace -1s with 0s for membership inference attack to work
         df_copy = df.copy()
         df_copy['Label'].replace(-1,0,regex=True,inplace=True)
-        print(df_copy)
         df_copy.to_csv("datasets/training/balanced/membership_inference_noisy.csv",index=False, encoding='utf-8',header=True)
 
 
@@ -187,6 +184,7 @@ def main():
 
     #df.plot.scatter('Lux', 'Float time value', c='Label', colormap='jet')
     #df.plot.savefig("all-collected-data-with-anomalies.png")
+    '''
     sns.color_palette("tab10")
     plot = sns.scatterplot(
         data=df,
@@ -218,7 +216,7 @@ def main():
     fig = plot.get_figure()
     # save the figure
     fig.savefig("nomalies.png")
-
+    '''
 
 # Program entry point
 
