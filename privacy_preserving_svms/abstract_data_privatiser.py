@@ -1,9 +1,13 @@
-# abstract base class
-from abc import ABC, abstractmethod
+"""
+Class for implementing offline differential privacy.
+It adds noise from the Laplace distribution depending
+on the calculated sensitivity value/s
+"""
 
 
-class ABCPrivacyPreserver(ABC):
-    # privatise the provided raw data
+class ABCPrivacyPreserver():
+    # privatise the provided raw data using different
+    # calculated sensitivity values for each column (if there are several)
     def privatise_data(self, raw_values, sensitivity_value=0.01, sensitivity_values_list=None):
         if type(raw_values) == list:
             # return an empty list if provided list is empty
@@ -50,7 +54,3 @@ class ABCPrivacyPreserver(ABC):
             data_sensitivity_vals_list.append(single_sensitivity_val)
         return data_sensitivity_vals_list
 
-    # method is implemented by subclasses of the current class
-    @abstractmethod
-    def privatise_single_value(self, value, data_sensitivity_value):
-        pass
