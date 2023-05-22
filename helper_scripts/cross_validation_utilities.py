@@ -1,8 +1,10 @@
 import math
+
+import numpy as np
 import pandas as pd
 from datetime import datetime
 import pickle as pkl
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, Normalizer
 
 """
 This file contains 2 helper functions used for testing/training 
@@ -88,11 +90,11 @@ def train_test_split(data, folds_path, fold_number):
     #  z = (x - u) / s
     # where u is the mean of the training samples
     scaler = StandardScaler()
+    normalizer = Normalizer(norm="max")
 
     # standardize the data (x training and testing values)
-    train_x_data = pd.DataFrame(scaler.fit_transform(train_x_data), columns=['Lux', 'Float time value'])
-    test_x_data = pd.DataFrame(scaler.transform(test_x_data), columns=['Lux', 'Float time value'])
-
+    train_x_data = pd.DataFrame(normalizer.fit_transform(scaler.fit_transform(train_x_data)), columns=['Lux', 'Float time value'])
+    test_x_data = pd.DataFrame(normalizer.transform(scaler.transform(test_x_data)), columns=['Lux', 'Float time value'])
     # combine with labels
     training_data = train_x_data.assign(Label=train_y_data["Label"].reset_index(drop=True))
     testing_data = test_x_data.assign(Label=test_y_data["Label"].reset_index(drop=True))

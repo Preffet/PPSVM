@@ -16,7 +16,7 @@ green = [x for x in green_colour for reps in range(7)]
 red = ['#F90627']
 
 # load the dataset
-df = pd.read_csv('./datasets/all_data/all_data_including_anomalous.csv', header=0, sep=',')
+df = pd.read_csv('./datasets/all_data/balanced-all_data_including_anomalous.csv', header=0, sep=',')
 all_data = df.loc[:, ['Date', 'Float time value', 'Lux', 'Label']]
 
 # filter the valid and invalid data entries
