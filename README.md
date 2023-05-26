@@ -1,3 +1,11 @@
+![Badge tracking last commit](https://img.shields.io/github/last-commit/Preffet/PPSVM?color=%23013987)
+![Badge tracking number of files](https://img.shields.io/github/directory-file-count/Preffet/PPSVM?color=%23016a87)
+![Badge tracking code size](https://img.shields.io/github/languages/code-size/Preffet/PPSVM?color=%2301877a)
+![Badge tracking repo size](https://img.shields.io/github/repo-size/Preffet/PPSVM?color=%23013987)
+![github-header-image(1)](https://github.com/Preffet/PPSVM/assets/84241003/3a7b177e-67ee-4780-8c7e-37caabc1ec42)
+
+---------------------------------------------------------------------------
+
 ## Privacy Preserving SVM Code
 ## Installation
 To run the Project, first start the SVM.py file and select the privacy options. Following this, Run the Server.py to start the server listener between the client nodes and the SVM.
