@@ -71,7 +71,7 @@ def main():
             dir_path = os.path.dirname(os.path.dirname(__file__))
 
             # check time & pick a valid dataset
-            current_hour = 23#datetime.now().hour
+            current_hour = 10#datetime.now().hour
 
             if (6 > current_hour >= 0) or (21 <= current_hour < 24):
                 # get the dataset with valid night data

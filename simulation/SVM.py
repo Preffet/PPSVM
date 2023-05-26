@@ -5,13 +5,15 @@ from numpy import where
 import pandas as pd
 # Model and performance
 from sklearn import svm
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 # networking
 import socket
 # multithreading
 import threading
 # dp data privatisation
+from privacy_preserving_svms import objective_function_perturbation_SVM as obj_perturb_SVM
 from privacy_preserving_svms.Laplace_dataset_privatiser import DataConverter, LaplacePrivacyPreserver
+
 
 # ANSI escape codes to print coloured/bold text
 class colours:
@@ -34,7 +36,10 @@ SERVER_PORT = 59991
 FORMAT = "utf-8"
 # available choices for epsilon values when
 # running SVMs in privacy-preserving way
-EPSILON_VALUES = [5.0, 4.0, 1.0, 0.5, 0.25]
+EPSILON_VALUES = [0.9, 0.5, 0.1]
+# privacy preserving SVM lambda and h values
+SVM_H = 5
+SVM_LAMBDA = 0.2
 
 
 # function to get the chosen SVM type as
@@ -44,9 +49,7 @@ def get_svm_parameters():
     def print_options(epsilon_values):
         print(f"{colours.BOLD}{colours.BLUE}1. {colours.ENDC}{epsilon_values[0]}\n"
               f"{colours.BOLD}{colours.CYAN}2. {colours.ENDC}{epsilon_values[1]}\n"
-              f"{colours.BOLD}{colours.GREEN}3. {colours.ENDC}{epsilon_values[2]}\n"
-              f"{colours.BOLD}{colours.YELLOW}4. {colours.ENDC}{epsilon_values[3]}\n"
-              f"{colours.BOLD}{colours.ORANGE}5. {colours.ENDC}{epsilon_values[4]}\n")
+              f"{colours.BOLD}{colours.GREEN}3. {colours.ENDC}{epsilon_values[2]}\n")
 
     # small function to check if the entered value is correct
     # and if it is, return it
@@ -70,6 +73,7 @@ def get_svm_parameters():
     # - Not privacy preserving
     # - Preserving dataset privacy
     # - Differentially private SVM
+    # - Privatised dataset + differentially private svm
     print(f"\n{colours.BOLD}{colours.BLUE}Choose The SVM Type:{colours.ENDC}\n"
           f"{colours.BOLD}{colours.CYAN}1.{colours.ENDC}Not Private\n"
           f"{colours.BOLD}{colours.GREEN}2.{colours.ENDC}Using Privatised Dataset\n"
@@ -79,16 +83,23 @@ def get_svm_parameters():
 
     # 2.Ask the user to choose the privacy parameter
     # if they choose option 2, 3, or 4
+    # (privatised dataset,
+    # differentially private SVM
+    # privatised dataset + differentially private SVM)
 
     # if it is option 2 or 3 ask for one
     # epsilon value
     epsilon1 = 0
     if svm_type in (2, 3):
-        print(f"\n{colours.BOLD}{colours.BLUE}Choose The Epsilon Value ",end='')
-        if svm_type == 2: print(f"(default is 5.0):{colours.ENDC}")
-        if svm_type == 3: print(f"(default is 0.25):{colours.ENDC}")
-        print_options(epsilon_values=EPSILON_VALUES)
-        epsilon1 = EPSILON_VALUES[get_value(5)-1]
+        print(f"\n{colours.BOLD}{colours.BLUE}Choose The Epsilon Value ", end='')
+        if svm_type == 2:
+            print(f"(default is 5):{colours.ENDC}")
+            print_options(epsilon_values=[i * 10 for i in EPSILON_VALUES])
+            epsilon1 = EPSILON_VALUES[get_value(3) - 1] * 10
+        if svm_type == 3:
+            print(f"(default is 0.5):{colours.ENDC}")
+            print_options(epsilon_values=EPSILON_VALUES)
+            epsilon1 = EPSILON_VALUES[get_value(3) - 1]
 
     # if it is option 4 ask for two
     # epsilon values
@@ -98,12 +109,12 @@ def get_svm_parameters():
     if svm_type == 4:
         print(f"\n{colours.BOLD}{colours.BLUE}Choose the Epsilon Value for Dataset Privatisation ")
         print(f"(default is 5.0):{colours.ENDC}")
-        print_options(epsilon_values=EPSILON_VALUES)
-        epsilon1 = EPSILON_VALUES[get_value(5)-1]
+        print_options(epsilon_values=[i * 10 for i in EPSILON_VALUES])
+        epsilon1 = EPSILON_VALUES[get_value(3) - 1] * 10
         print(f"\n{colours.BOLD}{colours.BLUE}Choose the Epsilon Value for Privacy-Preserving SVM ")
-        print(f"(default is 0.25):{colours.ENDC}")
+        print(f"(default is 0.5):{colours.ENDC}")
         print_options(epsilon_values=EPSILON_VALUES)
-        epsilon2 = EPSILON_VALUES[get_value(5)-1]
+        epsilon2 = EPSILON_VALUES[get_value(3) - 1]
 
     # Print information about the chosen parameters
     # non privatised svm
@@ -134,8 +145,10 @@ def get_svm_parameters():
 
     # return the SVM choice and epsilon values
     return svm_type, epsilon1, epsilon2
-# ------------------------------------------------------------------------------ #
 
+
+# -------------------------------------------------------- #
+# -------------------------------------------------------- #
 
 # Function to choose & load the correct training
 # datasets depending on the system time
@@ -144,27 +157,24 @@ def choose_training_dataset():
     # for real time testing, change current_hour variable value to datetime.now()
     # and then go to client.py file and change the current_hour variable to
     # datetime.now() too. These both values must match.
-    current_hour = 23 #datetime.now().hour
+    current_hour = 10  # datetime.now().hour
     df2 = pd.DataFrame()
     # if it is night
     if (6 > current_hour >= 0) or (21 <= current_hour < 24):
-        print("night")
         df1 = pd.read_csv('../datasets/training/balanced/night.csv',
                           header=0, sep=',')
 
     # if it is first half of the day
     elif 6 <= current_hour < 13:
-        print("day1")
-        df1 = pd.read_csv('../datasets/training/balanced/day1_0.csv',
+        df1 = pd.read_csv('../datasets/training/balanced/morning_0.csv',
                           header=0, sep=',')
-        df2 = pd.read_csv('../datasets/training/balanced/day1_1.csv',
+        df2 = pd.read_csv('../datasets/training/balanced/morning_1.csv',
                           header=0, sep=',')
     # if it is second half of the day
     else:
-        print("day3")
-        df1 = pd.read_csv('../datasets/training/balanced/day2_0.csv',
+        df1 = pd.read_csv('../datasets/training/balanced/evening_0.csv',
                           header=0, sep=',')
-        df2 = pd.read_csv('../datasets/training/balanced/day2_1.csv',
+        df2 = pd.read_csv('../datasets/training/balanced/evening_1.csv',
                           header=0, sep=',')
     # return the required dataframes
     return df1, df2
@@ -175,10 +185,10 @@ def choose_training_dataset():
 def privatised_training_dataset(eps):
     # import the dataset (with the headers)
     df = pd.read_csv('../datasets/all_data/all_data_including_anomalous.csv',
-                         header=0, sep=',')
+                     header=0, sep=',')
 
     # define the scaler
-    scaler = MinMaxScaler()
+    scaler = StandardScaler()
 
     # get X and y values from the dataset
     X = df.loc[:, ['Lux', 'Float time value']]
@@ -197,8 +207,8 @@ def privatised_training_dataset(eps):
     # get data sensitivity value
     input_sensitivity = data_privatiser.get_data_sensitivity_values(data_input)
     privatised_data = data_privatiser.privatise_data(
-            data_input,
-            sensitivity_values_list=input_sensitivity)
+        data_input,
+        sensitivity_values_list=input_sensitivity)
     # normalise the data
     privatised_data = scaler.fit_transform(pd.DataFrame(privatised_data, columns=['Lux', 'Float time value']))
     privatised_data = pd.DataFrame(privatised_data, columns=['Lux', 'Float time value'])
@@ -207,19 +217,18 @@ def privatised_training_dataset(eps):
     # return the privatised dataset and scaler
     return privatised_data, privatised_y_vals, scaler
 
-    # ------------------------------------------------------------------------------ #
+
+# -------------------------------------------------------- #
+# -------------------------------------------------------- #
 
 
 # function get the training data from the not privatised dataset
 def non_privatised_training_dataset(df, name):
     # define the scaler
-    scaler = MinMaxScaler()
+    scaler = StandardScaler()
     # get X and y values from the dataset
     X = df.loc[:, ['Lux', 'Float time value']]
     y = df['Label']
-    # convert to numpy array
-    # X = X.values
-    # y = y.values
     # normalise the training data and convert it back to a pd dataframe
     X_train = scaler.fit_transform(X)
     X_train = pd.DataFrame(X_train, columns=['Lux', 'Float time value'])
@@ -230,7 +239,10 @@ def non_privatised_training_dataset(df, name):
 
     # return training X,y values
     return X_train, y
-    # ------------------------------------------------------------------------------ #
+
+
+# -------------------------------------------------------- #
+# -------------------------------------------------------- #
 
 
 # function to prepare the received data for predictions
@@ -238,32 +250,23 @@ def prepare_received_data(msg, name):
     with open(f"detection_system_files/scalers/{name}scaler.pkl", "rb") as infile:
         scaler = pkl.load(infile)
     decoded_received_data = [float(x) for x in msg.split(",")]
-    print("decode data:")
-    print(decoded_received_data)
 
     # Print the received message
-    print(f"\n{colours.BOLD}{colours.BLUE}⫸{colours.ENDC}"
-              f" Data received: {colours.BOLD}{colours.BLUE}"
-              f"{decoded_received_data[0]},{decoded_received_data[1]}{colours.ENDC}", end='')
+    print(f"\n{colours.BOLD}{colours.BLUE}⫸{colours.ENDC} Data received: {colours.BOLD}{colours.BLUE}{decoded_received_data[0]},{decoded_received_data[1]}{colours.ENDC}", end = '')
 
     # convert the data to a dataframe
-    print("dataframe")
-    decoded_received_data = pd.DataFrame([decoded_received_data], columns=['Lux','Float time value'])
-    print(decoded_received_data)
+    decoded_received_data = pd.DataFrame([decoded_received_data], columns=['Lux', 'Float time value'])
+
     # scale it
-
     decoded_received_data = scaler.transform(decoded_received_data)
-    print("after scaling")
-    print(decoded_received_data)
-
     # convert to df again
-    data_to_be_predicted = pd.DataFrame(decoded_received_data, columns=['Lux','Float time value'])
-    print("df again")
-    print(data_to_be_predicted)
+    data_to_be_predicted = pd.DataFrame(decoded_received_data, columns=['Lux', 'Float time value'])
     # return pd dataframe containing the data to be predicted
     return data_to_be_predicted
-    # ------------------------------------------------------------------------------ #
 
+
+# -------------------------------------------------------- #
+# -------------------------------------------------------- #
 
 # helper function to filter out
 # outlier values after making a prediction
@@ -290,7 +293,10 @@ def filter_outlier_values(prediction, data_to_be_predicted):
               f" Decision: {colours.BOLD}{colours.GREEN}"
               f"valid{colours.ENDC}\n")
     return decision
-    # ------------------------------------------------------------------------------ #
+
+
+# -------------------------------------------------------- #
+# -------------------------------------------------------- #
 
 
 # multithreaded function where the anomaly detection is
@@ -302,7 +308,7 @@ def anomaly_detection(conn, addr, parameters):
     # get model training datasets
     df1, df2 = choose_training_dataset()[0], choose_training_dataset()[1]
 
-    # 1. classifier specification
+    # 1. dataset specification
     # if the user choose to use a not privatised dataset
     if parameters[0] == 1 or parameters[0] == 3:
         # retrieve x,y train values and scaler for the first classifier
@@ -338,7 +344,8 @@ def anomaly_detection(conn, addr, parameters):
             y_2 = dataset_info[1]
             scaler_2 = dataset_info[2]
 
-    # model specification
+    # 2. model specification
+
     # if the user chose to use
     # non-privacy preserving SVM
     if parameters[0] == 1 or parameters[0] == 2:
@@ -353,39 +360,47 @@ def anomaly_detection(conn, addr, parameters):
             # fit the training data for the 2nd classifier
             model_2.fit(X_train_2, np.ravel(y_2))
 
+    # if the user chose to use the privacy-preserving SVM
+    if parameters[0] == 3 or parameters[0] == 4:
+        model_1 = obj_perturb_SVM.SVM(privatised=True, lambda_value=SVM_LAMBDA, h_val=SVM_H)
+        # just add the y values to get all the data
+        X_train_1["Label"] = y_1
+        model_1.model_fit(epsilon_p=parameters[1], data=X_train_1)
+        if not df2.empty:
+            model_2 = obj_perturb_SVM.SVM(privatised=True, lambda_value=SVM_LAMBDA, h_val=SVM_H)
+            # just add the y values to get all the data
+            X_train_2["Label"] = y_2
+            model_2.model_fit(epsilon_p=parameters[1], data=X_train_2)
 
-    # receive a message, make a prediction
+    # 3. receive a message, make a prediction
     # send back results to the server
-    # 1. receive the message
-
+    # 3.1. receive the message
     msg = conn.recv(SIZE).decode(FORMAT)
     if not (len(msg) <= 0):
-        # 2. make predictions
+        # 3.2. make predictions
         # prepare data for the 1st prediction
         data_to_be_predicted_1 = prepare_received_data(msg, "df1")
-        print("data to be pred")
-        print(data_to_be_predicted_1)
-        # make the prediction
-        prediction_1 = model_1.predict(data_to_be_predicted_1)
-        print("pred")
-        print(prediction_1)
+        # 3.2 make the prediction
+        prediction_1 = model_1.make_prediction(data_to_be_predicted_1)
         # get the decision
         decision = filter_outlier_values(prediction_1, data_to_be_predicted_1)
         # if not anomalous, make the second prediction
         if decision != "anomalous" and not df2.empty:
             # prepare data for the 2nd prediction
-            data_to_be_predicted_2 = prepare_received_data(msg,"df2")
+            data_to_be_predicted_2 = prepare_received_data(msg, "df2")
             # make the prediction
-            prediction_2 = model_2.predict(data_to_be_predicted_2)
+            prediction_2 = model_2.make_prediction(data_to_be_predicted_2)
             # get the decision
             decision = filter_outlier_values(prediction_2, data_to_be_predicted_2)
 
-        # 3. send back the prediction to the router (server)
+        # 3.3 send back the prediction to the router (server)
         conn.send(decision.encode(FORMAT))
     else:
         return
-# ------------------------------------------------------------------------------ #
 
+
+# -------------------------------------------------------- #
+# -------------------------------------------------------- #
 
 # Program Entry Point
 def main():
@@ -413,7 +428,6 @@ def main():
 
     # Main program loop
     while True:
-
         # Wait for the server to connect and accept the connection
         conn, addr = svm_server.accept()
 
@@ -421,7 +435,9 @@ def main():
         anomaly_detection(conn, addr, parameters)
 
         # Create a separate thread to handle separate data
-        # when doing anomaly detection
+        # when doing anomaly detection. This is done so that the
+        # SVM could support multiple nodes and predict their data at
+        # the same time
         thread = threading.Thread(target=anomaly_detection, args=(conn, addr, parameters))
         thread.start()
 
