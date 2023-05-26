@@ -183,7 +183,7 @@ def main():
     # load the dataset
     data = pd.read_csv('../datasets/training/balanced/afternoon_0.csv', header=0, sep=',')
     # choose the function (grid search/privacy and accuracy trade-off evaluation)
-    #grid_search(data)
+    grid_search(data)
     privacy_accuracy_evaluation(data)
 
 

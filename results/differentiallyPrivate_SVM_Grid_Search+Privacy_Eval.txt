@@ -1,0 +1,223 @@
+Best discovered parameters during run 1:
+{'accuracy': 0.9390625, 'h': 0.5, 'lambda': 0.02}
+Best discovered parameters during run 2:
+{'accuracy': 0.93125, 'h': 0.5, 'lambda': 0.02}
+Best discovered parameters during run 3:
+{'accuracy': 0.9546875, 'h': 0.5, 'lambda': 0.02}
+Best discovered parameters during run 4:
+{'accuracy': 0.9375, 'h': 0.5, 'lambda': 0.02}
+Best discovered parameters during run 5:
+{'accuracy': 0.9375, 'h': 0.5, 'lambda': 0.02}
+
+RUN NUMBER : 0 
+
+FOLD NUMBER : 0
+epsilon 0.02 accuracy 0.7646048109965635
+epsilon 0.05 accuracy 0.9484536082474226
+epsilon 0.07 accuracy 0.9020618556701031
+epsilon 0.1 accuracy 0.9329896907216495
+epsilon 0.5 accuracy 0.9536082474226804
+epsilon 0.7 accuracy 0.9501718213058419
+epsilon 0.9 accuracy 0.9553264604810997
+plain 0.921875
+
+FOLD NUMBER : 1
+epsilon 0.02 accuracy 0.9501718213058419
+epsilon 0.05 accuracy 0.9192439862542955
+epsilon 0.07 accuracy 0.9381443298969072
+epsilon 0.1 accuracy 0.9347079037800687
+epsilon 0.5 accuracy 0.9381443298969072
+epsilon 0.7 accuracy 0.9347079037800687
+epsilon 0.9 accuracy 0.936426116838488
+plain 0.96875
+
+FOLD NUMBER : 2
+epsilon 0.02 accuracy 0.6374570446735395
+epsilon 0.05 accuracy 0.9518900343642611
+epsilon 0.07 accuracy 0.9261168384879725
+epsilon 0.1 accuracy 0.9415807560137457
+epsilon 0.5 accuracy 0.9518900343642611
+epsilon 0.7 accuracy 0.9484536082474226
+epsilon 0.9 accuracy 0.9518900343642611
+plain 0.953125
+
+FOLD NUMBER : 3
+epsilon 0.02 accuracy 0.8762886597938144
+epsilon 0.05 accuracy 0.6460481099656357
+epsilon 0.07 accuracy 0.9381443298969072
+epsilon 0.1 accuracy 0.9536082474226804
+epsilon 0.5 accuracy 0.9381443298969072
+epsilon 0.7 accuracy 0.9467353951890034
+epsilon 0.9 accuracy 0.9467353951890034
+plain 0.90625
+
+FOLD NUMBER : 4
+epsilon 0.02 accuracy 0.6185567010309279
+epsilon 0.05 accuracy 0.9089347079037801
+epsilon 0.07 accuracy 0.9501718213058419
+epsilon 0.1 accuracy 0.929553264604811
+epsilon 0.5 accuracy 0.9518900343642611
+epsilon 0.7 accuracy 0.9536082474226804
+epsilon 0.9 accuracy 0.9484536082474226
+plain 0.9375
+
+FOLD NUMBER : 5
+epsilon 0.02 accuracy 0.8213058419243986
+epsilon 0.05 accuracy 0.9518900343642611
+epsilon 0.07 accuracy 0.9518900343642611
+epsilon 0.1 accuracy 0.9518900343642611
+epsilon 0.5 accuracy 0.9415807560137457
+epsilon 0.7 accuracy 0.9553264604810997
+epsilon 0.9 accuracy 0.9553264604810997
+plain 0.96875
+
+FOLD NUMBER : 6
+epsilon 0.02 accuracy 0.9536082474226804
+epsilon 0.05 accuracy 0.9398625429553265
+epsilon 0.07 accuracy 0.9415807560137457
+epsilon 0.1 accuracy 0.9536082474226804
+epsilon 0.5 accuracy 0.9553264604810997
+epsilon 0.7 accuracy 0.9553264604810997
+epsilon 0.9 accuracy 0.9553264604810997
+plain 0.9375
+
+FOLD NUMBER : 7
+epsilon 0.02 accuracy 0.788659793814433
+epsilon 0.05 accuracy 0.9536082474226804
+epsilon 0.07 accuracy 0.9501718213058419
+epsilon 0.1 accuracy 0.9381443298969072
+epsilon 0.5 accuracy 0.9347079037800687
+epsilon 0.7 accuracy 0.9518900343642611
+epsilon 0.9 accuracy 0.9381443298969072
+plain 0.953125
+
+FOLD NUMBER : 8
+epsilon 0.02 accuracy 0.7835051546391752
+epsilon 0.05 accuracy 0.9140893470790378
+epsilon 0.07 accuracy 0.9484536082474226
+epsilon 0.1 accuracy 0.9432989690721649
+epsilon 0.5 accuracy 0.9501718213058419
+epsilon 0.7 accuracy 0.9536082474226804
+epsilon 0.9 accuracy 0.9501718213058419
+plain 0.96875
+
+FOLD NUMBER : 9
+epsilon 0.02 accuracy 0.07560137457044669
+epsilon 0.05 accuracy 0.9450171821305842
+epsilon 0.07 accuracy 0.9381443298969072
+epsilon 0.1 accuracy 0.9518900343642611
+epsilon 0.5 accuracy 0.9467353951890034
+epsilon 0.7 accuracy 0.9381443298969072
+epsilon 0.9 accuracy 0.9501718213058419
+plain 0.953125
+
+RUN NUMBER : 1 
+
+FOLD NUMBER : 0
+epsilon 0.02 accuracy 0.9536082474226804
+epsilon 0.05 accuracy 0.936426116838488
+epsilon 0.07 accuracy 0.9536082474226804
+epsilon 0.1 accuracy 0.9587628865979382
+epsilon 0.5 accuracy 0.9467353951890034
+epsilon 0.7 accuracy 0.9467353951890034
+epsilon 0.9 accuracy 0.9536082474226804
+plain 0.9375
+
+FOLD NUMBER : 1
+epsilon 0.02 accuracy 0.9501718213058419
+epsilon 0.05 accuracy 0.9398625429553265
+epsilon 0.07 accuracy 0.9450171821305842
+epsilon 0.1 accuracy 0.9604810996563574
+epsilon 0.5 accuracy 0.9450171821305842
+epsilon 0.7 accuracy 0.9484536082474226
+epsilon 0.9 accuracy 0.9501718213058419
+plain 0.84375
+
+FOLD NUMBER : 2
+epsilon 0.02 accuracy 0.5738831615120275
+epsilon 0.05 accuracy 0.9501718213058419
+epsilon 0.07 accuracy 0.9501718213058419
+epsilon 0.1 accuracy 0.9432989690721649
+epsilon 0.5 accuracy 0.9553264604810997
+epsilon 0.7 accuracy 0.9639175257731959
+epsilon 0.9 accuracy 0.9501718213058419
+plain 0.90625
+
+FOLD NUMBER : 3
+epsilon 0.02 accuracy 0.7027491408934707
+epsilon 0.05 accuracy 0.4914089347079038
+epsilon 0.07 accuracy 0.9175257731958762
+epsilon 0.1 accuracy 0.936426116838488
+epsilon 0.5 accuracy 0.9501718213058419
+epsilon 0.7 accuracy 0.9501718213058419
+epsilon 0.9 accuracy 0.9501718213058419
+plain 0.96875
+
+FOLD NUMBER : 4
+epsilon 0.02 accuracy 0.9243986254295533
+epsilon 0.05 accuracy 0.9226804123711341
+epsilon 0.07 accuracy 0.929553264604811
+epsilon 0.1 accuracy 0.9553264604810997
+epsilon 0.5 accuracy 0.9570446735395189
+epsilon 0.7 accuracy 0.9553264604810997
+epsilon 0.9 accuracy 0.9553264604810997
+plain 0.921875
+
+FOLD NUMBER : 5
+epsilon 0.02 accuracy 0.2096219931271478
+epsilon 0.05 accuracy 0.9553264604810997
+epsilon 0.07 accuracy 0.9278350515463918
+epsilon 0.1 accuracy 0.9398625429553265
+epsilon 0.5 accuracy 0.9536082474226804
+epsilon 0.7 accuracy 0.9570446735395189
+epsilon 0.9 accuracy 0.9381443298969072
+plain 0.9375
+
+FOLD NUMBER : 6
+epsilon 0.02 accuracy 0.9432989690721649
+epsilon 0.05 accuracy 0.9450171821305842
+epsilon 0.07 accuracy 0.8419243986254296
+epsilon 0.1 accuracy 0.9450171821305842
+epsilon 0.5 accuracy 0.9381443298969072
+epsilon 0.7 accuracy 0.9518900343642611
+epsilon 0.9 accuracy 0.9381443298969072
+plain 0.96875
+
+FOLD NUMBER : 7
+epsilon 0.02 accuracy 0.5446735395189004
+epsilon 0.05 accuracy 0.9243986254295533
+epsilon 0.07 accuracy 0.9484536082474226
+epsilon 0.1 accuracy 0.9312714776632303
+epsilon 0.5 accuracy 0.9484536082474226
+epsilon 0.7 accuracy 0.9484536082474226
+epsilon 0.9 accuracy 0.9484536082474226
+plain 0.984375
+
+FOLD NUMBER : 8
+epsilon 0.02 accuracy 0.9467353951890034
+epsilon 0.05 accuracy 0.9209621993127148
+epsilon 0.07 accuracy 0.9484536082474226
+epsilon 0.1 accuracy 0.9484536082474226
+epsilon 0.5 accuracy 0.9312714776632303
+epsilon 0.7 accuracy 0.9347079037800687
+epsilon 0.9 accuracy 0.9347079037800687
+plain 0.984375
+
+FOLD NUMBER : 9
+epsilon 0.02 accuracy 0.9501718213058419
+epsilon 0.05 accuracy 0.9501718213058419
+epsilon 0.07 accuracy 0.9501718213058419
+epsilon 0.1 accuracy 0.9347079037800687
+epsilon 0.5 accuracy 0.9501718213058419
+epsilon 0.7 accuracy 0.9381443298969072
+epsilon 0.9 accuracy 0.9501718213058419
+plain 0.96875
+
+AVERAGE ACCURACY:
+epsilon 0.02 accuracy 0.7484536082474227
+epsilon 0.05 accuracy 0.9007731958762887
+epsilon 0.07 accuracy 0.9348797250859107
+epsilon 0.1 accuracy 0.9442439862542955
+epsilon 0.5 accuracy 0.9469072164948453
+epsilon 0.7 accuracy 0.9491408934707903
+plain Huber svm accuracy 0.9478522336769759
