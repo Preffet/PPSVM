@@ -88,8 +88,8 @@ def grid_search(data):
                         testing[['Lux', 'Float time value']] = scaler.transform(testing[['Lux', 'Float time value']])
 
                         # define the svm
-                        huber = obj_SVM.SVM(private=True, labda=l, h=h)
-                        huber.fit(data=training, epsilon_p=epsilon)
+                        huber = obj_SVM.SVM(privatised=True, lambda_value=l, h_val=h)
+                        huber.model_fit(data=training, epsilon_p=epsilon)
                         accuracy = 1 - huber.evaluate(testing)
                         cv_list.append(accuracy)
                     accuracies_dict = {'accuracy': mean(cv_list), 'h': h, 'lambda': l}
@@ -148,8 +148,8 @@ def privacy_accuracy_evaluation(data):
             # check each epsilon value
             for epsilon_value in epsilon_values:
                 # define the objective perturbation SVM
-                huber = obj_SVM.SVM(private=True, labda=privatised_lambda, h=h_val)
-                huber.fit(data=train, epsilon_p=epsilon_value)
+                huber = obj_SVM.SVM(privatised=True, lambda_value=privatised_lambda, h_val=h_val)
+                huber.model_fit(data=train, epsilon_p=epsilon_value)
                 # get the accuracy
                 accuracy = 1 - huber.evaluate(train)
                 # store the accuracy
@@ -157,8 +157,8 @@ def privacy_accuracy_evaluation(data):
                 epsilon_val_index = epsilon_val_index + 1
                 print(f"epsilon {epsilon_value} accuracy {accuracy}")
             # not privatised Huber loss SVM
-            plain_svm = obj_SVM.SVM(labda=public_lambda, h=h_val, private=False)
-            plain_svm.fit(epsilon_p=None, data=train)
+            plain_svm = obj_SVM.SVM(lambda_value=public_lambda, h_val=h_val, privatised=False)
+            plain_svm.model_fit(epsilon_p=None, data=train)
             accuracy_plain = 1 - plain_svm.evaluate(test)
             # add the plain svm accuracy value to the last index (9)
             accuracy_list[len(epsilon_values)] = accuracy_list[len(epsilon_values)] + accuracy_plain
@@ -187,8 +187,7 @@ def main():
     data = pd.read_csv('../datasets/training/balanced/afternoon_0.csv', header=0, sep=',')
     # choose the function (grid search/privacy and accuracy trade-off evaluation)
     #grid_search(data)
-    grid_search(data)
-    #privacy_accuracy_evaluation(data)
+    privacy_accuracy_evaluation(data)
 
 
 """"

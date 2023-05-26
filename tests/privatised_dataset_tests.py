@@ -31,7 +31,7 @@ class Colours:
 # Program Entry Point
 def main():
     # import the dataset (with the headers)
-    df = pd.read_csv('./datasets/training/balanced/night.csv', header=0, sep=',')
+    df = pd.read_csv('./datasets/training/balanced/morning_0.csv', header=0, sep=',')
 
 
     # get X and y values from the dataset
@@ -55,7 +55,7 @@ def main():
 
     # define the model, c=150 was the best
     # parameter value found after doing parameter tuning
-    clf = SVC(kernel="linear", C=500)
+    clf = SVC(kernel="linear", C=100)
     # define the parameter values for testing classic svm
     param_grid = {'C': [0.001, 0.01, 0.1, 1, 10, 100, 1000]}
     # fit the data
@@ -119,14 +119,6 @@ def main():
     kfold2 = model_selection.KFold(n_splits=10, shuffle=True)
     print(f"{Colours.BOLD}{Colours.BLUE}\nPrivatised Dataset SVM:{Colours.ENDC}")
     # test each epsilon value using cross validation
-
-    # plot
-    '''
-    fig, ax = plt.subplots()
-
-    '''
-
-
     for i in epsilon:
         results2 = []
         accuracy2 = 0
@@ -182,43 +174,7 @@ def main():
               f"{Colours.BOLD}{Colours.CYAN} {accuracy2/5}"
               f"\n{Colours.ENDC}")
 
-    #df.plot.scatter('Lux', 'Float time value', c='Label', colormap='jet')
-    #df.plot.savefig("all-collected-data-with-anomalies.png")
-    '''
-    sns.color_palette("tab10")
-    plot = sns.scatterplot(
-        data=df,
-        x="Float time value",
-        y="Lux",
-        hue="Label",
-        alpha=0.9,
-        s=100,
-        palette=[sns.color_palette("hls").as_hex()[0],sns.color_palette("hls").as_hex()[2]]
-        )
-    plt.show()
-
-    # set the ticks
-
-    # set the labels
-    plot.set(xlabel='Time (Hour)', ylabel='Illuminance (Lux)')
-    # remove the original legend
-    #plot.get_legend().remove()
-    # replace it with a better one
-    #custom_lines = [Line2D([0], [0], color='#6bb002', lw=4),
-                   # Line2D([], [], color='#BD455B', marker='o', linestyle='None', markersize=7)]
-
-   # plot.legend(custom_lines,
-               # ['Valid Data', 'Anomalous Data'],
-               # loc="upper left",
-               # fancybox=True,
-               # framealpha=0.9)
-
-    fig = plot.get_figure()
-    # save the figure
-    fig.savefig("nomalies.png")
-    '''
 
 # Program entry point
-
 if __name__ == '__main__':
     main()
