@@ -1,17 +1,7 @@
 ![Badge tracking number of files](https://img.shields.io/github/directory-file-count/Preffet/PPSVM?color=%23016a87)
 ![Badge tracking code size](https://img.shields.io/github/languages/code-size/Preffet/PPSVM?color=%2301877a)
 ![Badge tracking repo size](https://img.shields.io/github/repo-size/Preffet/PPSVM?color=%23013987)
-
-![updated](https://user-images.githubusercontent.com/84241003/178457017-7126a06b-e0c1-484e-b0a8-c94b7f98ab2b.gif)
-<img width="1402" alt="Screen Shot 2023-05-26 at 21 15 51" src="https://github.com/Preffet/PPSVM/assets/84241003/f6e32c1d-a652-4b5e-89f5-0c72875e0896">
-<img width="966" alt="Screen Shot 2023-05-26 at 21 13 34" src="https://github.com/Preffet/PPSVM/assets/84241003/b997f710-ed0f-4031-a2ce-d29cbe6f8173">
-<img width="970" alt="Screen Shot 2023-05-26 at 21 13 09" src="https://github.com/Preffet/PPSVM/assets/84241003/aa5dfe7f-d0be-463c-8671-48880e24e74e">
-
-
 -----------------------------------------------------------------------------
-
-![banner4](https://user-images.githubusercontent.com/84241003/161404865-51e3e994-90c2-4c60-be68-7c35959175ec.png)
-
 
 -----------------------------------------------------------------------------
 ## Installation
