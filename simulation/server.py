@@ -1,8 +1,8 @@
 import os
 import socket
+import smtplib
 import threading
 from datetime import datetime
-import smtplib
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -36,10 +36,12 @@ class Colours:
     ORANGE = '\033[38;5;173m'
 
 
-# send an email to the administrators informing
+# ------------------------------------------------------------------------------ #
+# ------------------------------------------------------------------------------ #
+
+# function to send an email to the administrators informing
 # them about the detected malicious node
 def send_email(date, time, ip, data):
-
     # get the path to the admin email addresses
     path_to_emails = os.path.dirname(os.path.dirname(__file__))
     path_to_emails = path_to_emails + "/Email/admin_email.csv"
@@ -50,7 +52,8 @@ def send_email(date, time, ip, data):
 
     port = 465  # For SSL
     # not an actual gmail account password,
-    # just the app password to authenticate this application :)
+    # it is an app password specifically created
+    # to authenticate this application
     password = 'gcjdhpydrjstnibz'
     sender_email = 'a15764291@gmail.com'
 
@@ -61,10 +64,10 @@ def send_email(date, time, ip, data):
         html_string = f.read()
 
     # replace placeholder text with the actual data
-    html_string = html_string\
-        .replace("{date}", date)\
-        .replace("{time}", time)\
-        .replace("{ip}", ip)\
+    html_string = html_string \
+        .replace("{date}", date) \
+        .replace("{time}", time) \
+        .replace("{ip}", ip) \
         .replace("{data}", data)
 
     # format the email
@@ -72,14 +75,17 @@ def send_email(date, time, ip, data):
     message['Subject'] = "Potential Malicious Node Identified on Network"
     message['From'] = sender_email
     message['To'] = admin_emails_string
-    # Attach the html doc defined earlier, as a MIMEText html content type to the MIME message
+
+    # attach the defined html document
     message.attach(MIMEText(html_string, "html"))
+
     # get the path to the blocklist.csv file
     path_to_blocklist_csv = os.path.dirname(__file__)
-    path_to_blocklist_csv = path_to_blocklist_csv + "/detection_system_files/blocklist.csv"
-    # Attach the blocklist file
+    path_to_blocklist_csv = path_to_blocklist_csv+ "/detection_system_files/blocklist.csv"
+
+    # attach the blocklist file
     attach_file_to_email(message, path_to_blocklist_csv)
-    # Convert it as a string
+    # convert email to text
     email_string = message.as_string()
 
     # send the email
@@ -87,10 +93,13 @@ def send_email(date, time, ip, data):
     server.login(sender_email, password)
     server.sendmail(sender_email, admin_emails_list, email_string)
     server.quit()
+
+
+# ------------------------------------------------------------------------------ #
 # ------------------------------------------------------------------------------ #
 
-
-# attach the blocklist csv file to the email
+# function to attach the blocklist csv
+# file to the email
 def attach_file_to_email(email_message, filename):
     # Open the attachment file for reading in binary mode,
     # and make it into MIMEApplication type
@@ -103,10 +112,13 @@ def attach_file_to_email(email_message, filename):
     )
     # Attach the file to the message
     email_message.attach(file_attachment)
+
+
+# ------------------------------------------------------------------------------ #
 # ------------------------------------------------------------------------------ #
 
-
-# Handle the communication between the server and the client
+# function to handle the communication
+# between the server and the client
 def handle_client(conn, addr):
     # print information when a new connection is received
     # new connection from {IP}:{PORT}
@@ -115,19 +127,22 @@ def handle_client(conn, addr):
           f" New connection from "
           f"{Colours.BOLD}{Colours.CYAN}"
           f"{addr[0]}:{addr[1]}\n", end='')
+
     # get the path to the clients.csv file
     path_to_clients_csv = os.path.dirname(__file__)
     path_to_clients_csv = path_to_clients_csv + "/detection_system_files/clients.csv"
-    # Add the client to the clients.csv
+
+    # add the client to the clients.csv
     # and assign id if the client does not already exist
     with open(path_to_clients_csv, "r+") as file:
-        id = len(file.readlines())+1
-        if not(f"{addr[0]}:{addr[1]}" in file.read()):
+        id = len(file.readlines()) + 1
+        if not (f"{addr[0]}:{addr[1]}" in file.read()):
             with open(path_to_clients_csv, "a") as f:
                 f.write(f"{id},{addr[0]}:{addr[1]}\n")
     connected = True
 
-    # Run while the client is connected
+    # main function loop,
+    # runs while the client is connected
     while connected:
         malicious = False
         # get the path to the blocklist.csv file
@@ -141,14 +156,13 @@ def handle_client(conn, addr):
 
             # if the message is empty, close the connection
             # but do not add the client to the blocklist
-            if not(len(msg) <= 0):
+            if not (len(msg) <= 0):
 
                 # Print the message: Message from {IP}:{PORT} : {MESSAGE}
                 print(f"\n{Colours.BOLD}{Colours.YELLOW}✦{Colours.ENDC}"
                       f"{Colours.ENDC} Message from {addr[0]}:{addr[1]}:"
                       f"{Colours.BOLD}{Colours.YELLOW}"
                       f" {msg.decode(FORMAT)}{Colours.ENDC}", end='')
-
 
                 # send received data to the cloud to be checked
                 # and get the decision whether the data is anomalous
@@ -158,25 +172,28 @@ def handle_client(conn, addr):
                 if not decision == "valid":
                     malicious = True
                     data = [float(x) for x in msg.decode().split(",")]
-                    # Print malicious data received: {data}
+
+                    # print that malicious data was received: {data}
                     print(f"\n{Colours.BOLD}{Colours.RED}⫸{Colours.ENDC}"
                           f" Malicious data received: "
                           f"{Colours.BOLD}{Colours.RED}"
                           f"{float(data[0])},{float(data[1])}"
                           f"{Colours.ENDC}", end='')
+
                     # add ip to the blocklist
                     current_date_and_time = datetime.now()
                     blocklist.write(f"{addr[0]}:{addr[1]},{current_date_and_time}\n")
+
                     # print: IP added to the blocklist {IP}
                     print(f"\n{Colours.BOLD}{Colours.RED}⫸{Colours.ENDC}"
                           f" IP added to the blocklist: {Colours.BOLD}"
                           f"{Colours.RED}{addr[0]}:{addr[1]}"
                           f"{Colours.ENDC}", end='\n')
 
-                    # Inform the node that it got blocked
+                    # inform the node that it got blocked
                     message = "blocked"
                     conn.send(message.encode(FORMAT))
-                    # email the administrators the information about the malicious node
+                    # email the administrators the
                     # and updated blocklist
                     send_email(str(current_date_and_time)[0:10],
                                str(current_date_and_time)[11:19],
@@ -212,11 +229,13 @@ def handle_client(conn, addr):
     print(f"{Colours.BOLD}{Colours.GREEN}⫸{Colours.ENDC}"
           f" Active connections: {Colours.BOLD}"
           f"{Colours.GREEN}{threading.activeCount() - 2}\n{Colours.ENDC}", end='')
+
+
+# ------------------------------------------------------------------------------ #
 # ------------------------------------------------------------------------------ #
 
-
-# Handle the communication between the
-# server and the cloud (SVM)
+# function to handle the communication
+# between the server and the cloud (SVM)
 def handle_cloud(msg):
     decision = "valid"
     # set up the server-cloud connection
@@ -257,10 +276,12 @@ def handle_cloud(msg):
                   f"{Colours.ENDC} Returned decision:"
                   f"{Colours.BOLD}{Colours.RED} {decision}{Colours.ENDC}\n ")
     return decision
+
+
+# ------------------------------------------------------------------------------ #
 # ------------------------------------------------------------------------------ #
 
-
-# Program entry point
+# program entry point
 def main():
     try:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -269,28 +290,33 @@ def main():
         # Print information: Listening on {IP}:{PORT}
         print(f"\n{Colours.BOLD}{Colours.BLUE}"
               f"〘{Colours.ENDC}"
-              f" The server is listening on {Colours.BOLD}{Colours.GREEN}"
+              f" The server is listening on "
+              f"{Colours.BOLD}{Colours.GREEN}"
               f"{IP}:{PORT}"
-              f"{Colours.YELLOW} 〙{Colours.ENDC}")
-        print(f"{Colours.BLUE}------------{Colours.CYAN}------------{Colours.GREEN}----------"
-              f"{Colours.YELLOW}------------{Colours.ENDC}")
+              f"{Colours.YELLOW} 〙"
+              f"{Colours.ENDC}")
+
+        print(f"{Colours.BLUE}------------"
+              f"{Colours.CYAN}------------"
+              f"{Colours.GREEN}----------"
+              f"{Colours.YELLOW}------------"
+              f"{Colours.ENDC}")
 
         # Main program loop
         while True:
             # Wait for the client to connect and accept the connection
             conn, addr = server.accept()
+
             # Create a separate thread to handle the client
             thread = threading.Thread(target=handle_client, args=(conn, addr))
             thread.start()
+
             # Print information about active connections.
             # Active connections: {number of active connections}
-            print(f"{Colours.BOLD}{Colours.GREEN}⫸{Colours.ENDC}"
-                  f" Active connections: {Colours.BOLD}{Colours.GREEN}{threading.activeCount() - 1}\n")
-
+            print(f"{Colours.BOLD}{Colours.GREEN}⫸{Colours.ENDC}Active connections: {Colours.BOLD}{Colours.GREEN}{threading.activeCount() - 1}")
     # Quit if errors occur
     except:
         os._exit(1)
-
 
 # Program entry point
 if __name__ == "__main__":

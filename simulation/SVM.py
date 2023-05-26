@@ -381,7 +381,7 @@ def anomaly_detection(conn, addr, parameters):
         # prepare data for the 1st prediction
         data_to_be_predicted_1 = prepare_received_data(msg, "df1")
         # 3.2 make the prediction
-        prediction_1 = model_1.make_prediction(data_to_be_predicted_1)
+        prediction_1 = model_1.predict(data_to_be_predicted_1)
         # get the decision
         decision = filter_outlier_values(prediction_1, data_to_be_predicted_1)
         # if not anomalous, make the second prediction
@@ -389,7 +389,7 @@ def anomaly_detection(conn, addr, parameters):
             # prepare data for the 2nd prediction
             data_to_be_predicted_2 = prepare_received_data(msg, "df2")
             # make the prediction
-            prediction_2 = model_2.make_prediction(data_to_be_predicted_2)
+            prediction_2 = model_2.predict(data_to_be_predicted_2)
             # get the decision
             decision = filter_outlier_values(prediction_2, data_to_be_predicted_2)
 
