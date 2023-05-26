@@ -1,3 +1,11 @@
+'''
+This is just a script I used to test
+whether or not I could send emails
+or not when anomalies are detected on the
+real network, in order to add the created
+svm, the svm from scikit learn library should be
+replaced
+'''
 import json
 import base64
 import os
