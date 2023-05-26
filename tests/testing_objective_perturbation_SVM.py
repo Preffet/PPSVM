@@ -1,8 +1,7 @@
 import pandas as pd
 from numpy import mean
 import numpy as np
-from sklearn import preprocessing
-from sklearn.preprocessing import Normalizer, StandardScaler, MinMaxScaler
+from sklearn.preprocessing import StandardScaler
 
 from privacy_preserving_svms import objective_function_perturbation_SVM as obj_SVM
 from helper_scripts import cross_validation_utilities as cv_utils
@@ -177,13 +176,11 @@ def privacy_accuracy_evaluation(data):
     print(f"plain Huber svm accuracy {final_average[last_index]}")
 
 
-
 """"
 Program entry function
 """
 def main():
     # load the dataset
-
     data = pd.read_csv('../datasets/training/balanced/afternoon_0.csv', header=0, sep=',')
     # choose the function (grid search/privacy and accuracy trade-off evaluation)
     #grid_search(data)

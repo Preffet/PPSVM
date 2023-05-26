@@ -1,7 +1,5 @@
 import matplotlib
-import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
 from sklearn import model_selection
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import cross_validate, GridSearchCV
@@ -11,7 +9,7 @@ from sklearn.svm import SVC
 from privacy_preserving_svms.Laplace_dataset_privatiser import DataConverter, LaplacePrivacyPreserver
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import train_test_split
-import seaborn as sns
+
 simplefilter("ignore", category=ConvergenceWarning)
 # update/change matplotlib backend if not running on macosx
 # as it might give errors on Windows if left as it is
