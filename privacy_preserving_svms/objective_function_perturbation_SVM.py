@@ -120,7 +120,7 @@ class SVM:
         return np.mean(loss_value + (self.lambda_value / 2 * (np.linalg.norm(f) ** 2)) + ((1 / self.n) * np.dot(np.transpose(noise), f)))
 
     #  make a prediction
-    def make_prediction(self, data_sample):
+    def predict(self, data_sample):
         # flatten the data if it is a numpy array
         flattened_data = data_sample.values.flatten()\
             if not isinstance(data_sample, np.ndarray) else data_sample.flatten()
