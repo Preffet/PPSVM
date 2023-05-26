@@ -2,6 +2,7 @@
 ![Badge tracking code size](https://img.shields.io/github/languages/code-size/Preffet/PPSVM?color=%2301877a)
 ![Badge tracking repo size](https://img.shields.io/github/repo-size/Preffet/PPSVM?color=%23013987)
 -----------------------------------------------------------------------------
+<img width="970" alt="Screen Shot 2023-05-26 at 21 13 09" src="https://github.com/Preffet/PPSVM/assets/84241003/e8e50f61-be77-4074-ac7d-0e25d9b9a24d">
 
 -----------------------------------------------------------------------------
 ## Installation
@@ -41,5 +42,92 @@ The grid search results can be seen in the /results folder. The accuracy evaluat
 
 -----------------------------------------------------------------------------
 ## Overall Project Structure
-
+```
+.
+├── README.md
+├── datasets
+│   ├── all_data
+│   │   ├── all_collected_valid_data.csv
+│   │   ├── all_data_including_anomalous.csv
+│   │   └── balanced-all_data_including_anomalous.csv
+│   ├── simulation_nodes
+│   │   ├── malicious
+│   │   │   └── malicious.csv
+│   │   └── valid
+│   │       ├── day1.csv
+│   │       ├── day2.csv
+│   │       └── night.csv
+│   └── training
+│       ├── balanced
+│       │   ├── afternoon_0.csv
+│       │   ├── afternoon_1.csv
+│       │   ├── balanced-all_data_including_anomalous.csv
+│       │   ├── day1_0.csv
+│       │   ├── day1_1.csv
+│       │   ├── day2_1.csv
+│       │   ├── membership_inference_noisy.csv
+│       │   ├── membership_inference_original.csv
+│       │   ├── morning_0.csv
+│       │   ├── morning_1.csv
+│       │   └── night.csv
+│       └── original
+│           ├── day1_0.csv
+│           ├── day1_1.csv
+│           ├── day2_0.csv
+│           ├── day2_1.csv
+│           └── night.csv
+├── email
+│   ├── admin_email.csv
+│   ├── instructions.txt
+│   ├── real_implementation_email.html
+│   └── simulation_email.html
+├── helper_scripts
+│   ├── cross_validation_utilities.py
+│   ├── data_validator.py
+│   ├── dataset_balancer.py
+│   └── plots
+│       ├── all-collected-data-with-anomalies.png
+│       ├── class-distribution-after-balancing-night.png
+│       ├── class-distribution-night.png
+│       ├── figures
+│       │   ├── all-collected-data-with-anomalies.png
+│       │   └── all-collected-data.png
+│       ├── plot-all-data-with-anomalies.py
+│       └── plot-all-data.py
+├── privacy_preserving_svms
+│   ├── Laplace_dataset_privatiser.py
+│   ├── __pycache__
+│   │   ├── Laplace_dataset_privatiser.cpython-39.pyc
+│   │   ├── abstract_data_privatiser.cpython-39.pyc
+│   │   └── objective_function_perturbation_SVM.cpython-39.pyc
+│   ├── abstract_data_privatiser.py
+│   └── objective_function_perturbation_SVM.py
+├── real_implementation
+│   ├── GatewayMQTT.py
+│   ├── arduino_sensor_box_code
+│   │   └── Arduino Code.ino
+│   ├── detection_system_files
+│   │   ├── blocklist.csv
+│   │   ├── clients.csv
+│   │   └── malicious_data_received.csv
+│   └── send_email_report.py
+├── results
+│   └── simple_SVM_grid_search_results.txt
+├── simulation
+│   ├── SVM.py
+│   ├── client.py
+│   ├── detection_system_files
+│   │   ├── blocklist.csv
+│   │   ├── clients.csv
+│   │   └── scalers
+│   │       ├── df1scaler.pkl
+│   │       └── df2scaler.pkl
+│   ├── malicious_client.py
+│   └── server.py
+└── tests
+    ├── membership_inference_attacks.py
+    ├── privatised_dataset_tests.py
+    ├── scaler
+    │   └── scaler.pkl
+    └── testing_objective_perturbation_SVM.py
 
