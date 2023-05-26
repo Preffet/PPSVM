@@ -39,7 +39,7 @@ FORMAT = "utf-8"
 EPSILON_VALUES = [0.9, 0.5, 0.1]
 # privacy preserving SVM lambda and h values
 SVM_H = 5
-SVM_LAMBDA = 0.2
+SVM_LAMBDA = 0.002
 
 
 # function to get the chosen SVM type as
@@ -203,7 +203,7 @@ def privatised_training_dataset(eps):
     data_input = ad.convert_from_original(X)
     target_values = ad.convert_from_original(y)
     # define the data privatiser
-    data_privatiser = LaplacePrivacyPreserver(eps * 10)
+    data_privatiser = LaplacePrivacyPreserver(eps * 100)
     # get data sensitivity value
     input_sensitivity = data_privatiser.get_data_sensitivity_values(data_input)
     privatised_data = data_privatiser.privatise_data(

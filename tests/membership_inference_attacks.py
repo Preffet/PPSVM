@@ -1,23 +1,15 @@
-
 from __future__ import absolute_import, division, print_function, unicode_literals
-
 import numpy as np
 import pandas as pd
-from IPython.display import clear_output
-from matplotlib import pyplot as plt
-from sklearn import metrics
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
-
 from privacy_preserving_svms import objective_function_perturbation_SVM as obj_perturb_svm
-from art import config
 from art.estimators.classification import BlackBoxClassifier
-from art.attacks.evasion import HopSkipJump
-from art.utils import to_categorical
-from art.utils import load_dataset, get_file, compute_accuracy
-#(x_train, y_train), (x_test, y_test), min_, max_ = load_dataset(str('mnist'))
+import numpy as np
+from art.attacks.inference.membership_inference import MembershipInferenceBlackBoxRuleBased
+
 # import the dataset (with the headers)
 df = pd.read_csv('./datasets/training/balanced/morning_0.csv', header=0, sep=',')
 #df = pd.read_csv('./datasets/training/balanced/membership_inference_original.csv', header=0, sep=',')
@@ -35,22 +27,21 @@ y = np.where(y == 0, -1, y)
 # split the data into train and test datasets
 # 70% for training, 30% for predictions
 x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.50,random_state=1)
-#(x_target, y_target), (x_shadow, y_shadow), _, _ = load_nursery(test_set=0.75)
 
-# Sample predict function that reformats inputs, connects to wml scoring endpoint and
-# returns one-hot encoded predictions
-
-# Create blackbox object
+# define non private model
 model2 = SVC(C=100)
 x_train = scaler.fit_transform(x_train)
-model2.fit(x_train,y_train)
+model2.fit(x_train, y_train)
 
 x_test = scaler.transform(x_test)
 results = model2.predict(x_test)
+# define private model
 model_1 = obj_perturb_svm.SVM(privatised=True, lambda_value=0.2, h_val=1)
-# just add the y values to get all the data
-model_1.fit_membership_inference(x_train,y_train,epsilon_p=0.3)
 
+# fit non private model
+model_1.fit_membership_inference(x_train, y_train, epsilon_p=0.3)
+
+# encoding
 def manual_to_categorical(labels, nb_classes):
     result = np.zeros((len(labels), nb_classes))
     for i, label in enumerate(labels):
@@ -60,21 +51,17 @@ def manual_to_categorical(labels, nb_classes):
             result[i, 1] = 1
     return result
 
-
+# private model prediction helper function
 def predict(x):
     x = np.array(x)
     predictions = model_1.membership_inference_predict(x)
     predictions = list(map(int, predictions))
     return manual_to_categorical(predictions, nb_classes=2)
 
+# fit the custom (differentially private)
+# classifier into the ART library black box model
 classifier = BlackBoxClassifier(predict, x_test.shape,2)
-
-
-
-
-import numpy as np
-from art.attacks.inference.membership_inference import MembershipInferenceBlackBoxRuleBased
-
+# define the attack
 attack = MembershipInferenceBlackBoxRuleBased(classifier)
 
 # infer attacked feature
@@ -96,5 +83,6 @@ test_data = pd.DataFrame({
     'Label': y_test
 })
 
+# print the results
 print('Base model accuracy: ')
 print(accuracy_score(results,y_test))
